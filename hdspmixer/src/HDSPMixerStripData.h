@@ -24,7 +24,10 @@
 
 #include "defines.h"
 
-
+/*! \brief Data for Input and Playback
+ *
+ * Mute, Solo, Pan, Fader and destination of an Input or Playback
+ */
 class HDSPMixerStripData
 {
 public:

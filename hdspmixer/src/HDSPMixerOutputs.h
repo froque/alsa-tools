@@ -30,6 +30,10 @@
 class HDSPMixerOutput;
 class HDSPMixerEmpty;
 
+/*! \brief Collection of Output's
+ *
+ * Groups together all outputs into the third strip
+ */
 class HDSPMixerOutputs:public Fl_Group
 {
 public:

@@ -36,6 +36,10 @@ class HDSPMixerWindow;
 class HDSPMixerIOMixer;
 
 
+/*! \brief Destinations Menu
+ *
+ *  Menu to choose destination for Input and Playback
+ */
 class HDSPMixerSelector:public Fl_Menu_
 {
 private:

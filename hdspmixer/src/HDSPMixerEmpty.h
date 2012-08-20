@@ -26,6 +26,11 @@
 #include <FL/fl_draw.H>
 #include "pixmaps.h"
 
+/*! \brief Draws an empty background Widget
+ *
+ * Draws the background, seen on the right side under the Menus.
+ * There is a Alsa logo beside the Playbacks
+ */
 class HDSPMixerEmpty:public Fl_Widget
 {
 private:

@@ -30,6 +30,10 @@
 class HDSPMixerWindow;
 class HDSPMixerAboutText;
 
+/*! \brief About Window
+ *
+ *  Opens a new window for the "About" text
+ */
 class HDSPMixerAbout:public Fl_Double_Window
 {
 private:

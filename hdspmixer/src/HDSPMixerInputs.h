@@ -31,6 +31,11 @@ class HDSPMixerButtons;
 class HDSPMixerIOMixer;
 class HDSPMixerEmpty;
 
+/*! \brief Collection of IOMixer's
+ *
+ * Groups together all inputs into the first strip
+ * The Right Menus are incorporated in this class
+ */
 class HDSPMixerInputs:public Fl_Group
 {
 public:

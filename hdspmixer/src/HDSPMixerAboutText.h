@@ -26,6 +26,10 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 
+/*! \brief About Text Widget
+ *
+ *  Draws the About Text Widget in the About Window
+ */
 class HDSPMixerAboutText:public Fl_Widget
 {
 public:

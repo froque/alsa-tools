@@ -30,6 +30,10 @@
 class HDSPMixerIOMixer;
 class HDSPMixerOutput;
 
+/*! \brief Peak text box Widget
+ *
+ *  Draws the text for the box above fader and meter for Inputs, Playbacks and Outputs
+ */
 class HDSPMixerPeak:public Fl_Widget
 {
 private:

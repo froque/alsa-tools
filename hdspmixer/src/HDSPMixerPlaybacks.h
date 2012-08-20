@@ -29,6 +29,10 @@
 class HDSPMixerEmpty;
 class HDSPMixerIOMixer;
 
+/*! \brief Collection of IOMixer's
+ *
+ * Groups together all playbacks into the second strip
+ */
 class HDSPMixerPlaybacks:public Fl_Group
 {
 public:

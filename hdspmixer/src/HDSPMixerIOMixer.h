@@ -48,15 +48,20 @@ class HDSPMixerMuteSolo;
 class HDSPMixerStripData;
 class HDSPMixerMeter;
 
+/*! \brief Generic class for Inputs and Playbacks
+ *
+ * Groups all necessary elements to make either an Input or a Playback
+ * \todo Variable mixer_type is private and not in use anywhere
+ */
 class HDSPMixerIOMixer:public Fl_Group
 {
 private:
     char const **p_iomixer_xpm;
     int channel_num, relative_num, mixer_type;
-	std::stringstream channel_name;
+    std::stringstream channel_name;
     void update_child(Fl_Widget &widget);
 public:
-    HDSPMixerStripData *data[MAX_CARDS][3][NUM_PRESETS]; /* data[card][mode(ss/ds/qs)][preset number] */
+    HDSPMixerStripData *data[MAX_CARDS][3][NUM_PRESETS]; /*!< data[card][mode(ss/ds/qs)][preset number] */
     HDSPMixerPan *pan;
     HDSPMixerFader *fader;
     HDSPMixerPeak *peak;

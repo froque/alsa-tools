@@ -30,6 +30,10 @@
 
 class HDSPMixerWindow;
 
+/*! \brief Right Side Menu Master
+ *
+ *  Global Mute and Solo buttons
+ */
 class HDSPMixerMaster:public Fl_Widget
 {
 private:

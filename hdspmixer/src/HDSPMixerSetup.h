@@ -34,6 +34,11 @@
 
 class HDSPMixerWindow;
 
+/*! \brief Options Setup Windows
+ *
+ *  Opens a new window to setup level meter options such as peak, samples and rate
+ *  \todo there are unecessary public variables in this class
+ */
 class HDSPMixerSetup:public Fl_Double_Window
 {
 public:
@@ -49,11 +54,11 @@ public:
     Fl_Round_Button *sixty;
     Fl_Check_Button *rmsplus3;
     Fl_Return_Button *ok;
-    int rate_val;
-    int over_val;
-    int level_val;
-    int numbers_val;
-    int rmsplus3_val;
+    int rate_val;               /*!< Release Rate */
+    int over_val;               /*!< FS samples for OVR */
+    int level_val;              /*!< Minimum Level */
+    int numbers_val;            /*!< Numbers: RMS vs Peak */
+    int rmsplus3_val;           /*!< RMS +3dB: checkmark */
     HDSPMixerSetup(int w, int h, char const *label, HDSPMixerWindow *win);
     HDSPMixerWindow *basew;
     void updateValues();

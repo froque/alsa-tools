@@ -30,9 +30,9 @@
 #define HDSP_AES 13 /* both HDSP AES32 and HDSPe AES */
 
 #define HDSP_MAX_CHANNELS 64
-#define HDSP_MAX_DEST	  32
+#define HDSP_MAX_DEST     32
 
-#define STRIP_WIDTH 	  36
+#define STRIP_WIDTH       36
 #define FULLSTRIP_HEIGHT  253
 #define SMALLSTRIP_HEIGHT 208
 #define MENU_HEIGHT       20
@@ -40,21 +40,24 @@
 #define MIN_WIDTH  2*STRIP_WIDTH
 #define MIN_HEIGHT MENU_HEIGHT
 
-#define CF	     8
-#define FADER_HEIGHT 137
-#define METER_HEIGHT 139
-#define PEAK_HEIGHT  4
+#define CF              8
+#define FADER_HEIGHT    137
+#define METER_HEIGHT    139
+#define PEAK_HEIGHT     4
 
-#define PAN_WIDTH 28
+#define PAN_WIDTH       28
 
-#define MAX_CARDS	3
+#define MAX_CARDS       3
 
 /* Number of presets. 8 presets visible to the user, the 9th is used for
  * holding temporary mixer data when switching cards, so it's not a real
  * preset but more like a scratch pad.
  */
-#define NUM_PRESETS	9
+#define NUM_PRESETS     9
 
+/*!
+ * \bug Should use uint64_t
+ */
 typedef unsigned long long int int64;
 
 #endif

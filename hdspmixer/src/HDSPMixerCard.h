@@ -32,13 +32,17 @@
 #include "channelmap.h"
 #include "HDSPMixerWindow.h"
 
-/* temporary workaround until hdsp.h (HDSP_IO_Type gets fixed */
+/*! \bug temporary workaround until hdsp.h (HDSP_IO_Type gets fixed */
 #ifndef RPM
-# define RPM	4
+# define RPM    4
 #endif
 
 class HDSPMixerWindow;
 
+/*! \brief Card Management
+ *
+ *  Manages HDSP cards
+ */
 class HDSPMixerCard
 {
 private:
@@ -58,7 +62,7 @@ public:
     char *channel_map_input, *channel_map_playback;
     char *dest_map;
     char *meter_map_input, *meter_map_playback;
-    int speed_mode;
+    int speed_mode;                                 /*!< ADAT speed*/
     int playbacks_offset;
     void setMode(int mode);
     int initializeCard(HDSPMixerWindow *w);

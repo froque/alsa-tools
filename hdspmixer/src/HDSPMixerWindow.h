@@ -57,14 +57,18 @@ class HDSPMixerSetup;
 class HDSPMixerAbout;
 class HDSPMixerCard;
 
+/*! \brief Main Window
+ *
+ *  This is the main window from where all is controlled.
+ */
 class HDSPMixerWindow:public Fl_Double_Window 
 {
 private:
     int buttons_removed;
 public:
-    int current_card;
-    int current_preset;
-    int dirty;
+    int current_card;                                       /*!< pointer to current HDSP card */
+    int current_preset;                                     /*!< pointer to current preset */
+    int dirty;                                              /*!< NOTSURE: indicates if preset was changed but not saved */
     char file_name_buffer[FL_PATH_MAX];
     char window_title[FL_PATH_MAX];
     char *file_name;
@@ -73,11 +77,11 @@ public:
     Fl_Scroll *scroll;
     HDSPMixerSetup *setup;
     HDSPMixerAbout *about;
-    HDSPMixerPresetData *data[MAX_CARDS][3][NUM_PRESETS]; /* data[card number][mode(ss/ds/qs)][preset number] */
-    HDSPMixerCard *cards[MAX_CARDS];
-    HDSPMixerInputs *inputs;
-    HDSPMixerPlaybacks *playbacks;
-    HDSPMixerOutputs *outputs;
+    HDSPMixerPresetData *data[MAX_CARDS][3][NUM_PRESETS]; /*!< data[card number][mode(ss/ds/qs)][preset number] */
+    HDSPMixerCard *cards[MAX_CARDS];                      /*!< pointers to all HDSP cards in use*/
+    HDSPMixerInputs *inputs;                              /*!< pointer to inputs strip*/
+    HDSPMixerPlaybacks *playbacks;                        /*!< pointer to playbacks strip*/
+    HDSPMixerOutputs *outputs;                            /*!< pointer to outputs strip*/
     HDSPMixerWindow(int x, int y, int w, int h, const char *label, class HDSPMixerCard *hdsp_card1, class HDSPMixerCard *hdsp_card2, class HDSPMixerCard *hdsp_card3);
     void reorder();
     int handle(int e);

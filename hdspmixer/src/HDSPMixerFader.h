@@ -37,6 +37,10 @@ class HDSPMixerOutput;
 class HDSPMixerGain;
 class HDSPMixerWindow;
 
+/*! \brief Fader widget
+ *
+ * Draws the fader for Inputs, Playbacks and Outputs
+ */
 class HDSPMixerFader:public Fl_Widget
 {
 private:

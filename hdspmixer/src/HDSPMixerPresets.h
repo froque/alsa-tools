@@ -43,7 +43,10 @@ enum presets {
     PRE8 = 128,
 };
 
-
+/*! \brief Right Side Menu Presets
+ *
+ *  controls 8 presets
+ */
 class HDSPMixerPresets:public Fl_Widget
 {
 private:

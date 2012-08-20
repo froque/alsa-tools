@@ -29,6 +29,10 @@
 
 class HDSPMixerWindow;
 
+/*! \brief Mute and Solo Widget
+ *
+ *  Handles mute and solo buttons in each input and playback
+ */
 class HDSPMixerMuteSolo:public Fl_Widget
 {
 private:

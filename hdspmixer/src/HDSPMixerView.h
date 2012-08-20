@@ -30,6 +30,11 @@
 
 class HDSPMixerWindow;
 
+
+/*! \brief Right Side Menu View
+ *
+ *  Draws checkmarks for Input,Output, Playback and Submix
+ */
 class HDSPMixerView:public Fl_Widget
 {
 private:

@@ -33,6 +33,10 @@
 class HDSPMixerIOMixer;
 class HDSPMixerWindow;
 
+/*! \brief Pan Widget
+ *
+ *  Handles the panning in each input and playback
+ */
 class HDSPMixerPan:public Fl_Widget
 {
 private:

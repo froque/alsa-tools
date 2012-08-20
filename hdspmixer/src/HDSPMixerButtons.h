@@ -37,6 +37,10 @@ class HDSPMixerMaster;
 class HDSPMixerView;
 class HDSPMixerPresets;
 
+/*! \brief Right Side Menus
+ *
+ *  Manages the right side menus: Master, View, Presets and Card
+ */
 class HDSPMixerButtons:public Fl_Group
 {
 private:

@@ -41,7 +41,10 @@ class HDSPMixerMeter;
 class HDSPMixerOutputData;
 class HDSPMixerWindow;
 
-
+/*! \brief Output class
+ *
+ * Groups all necessary elements to make an Output
+ */
 class HDSPMixerOutput:public Fl_Group
 {
 private:

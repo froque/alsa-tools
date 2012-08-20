@@ -31,6 +31,10 @@
 
 class HDSPMixerWindow;
 
+/*! \brief Right Side Menu Card
+ *
+ *  Selects current HDSP card
+ */
 class HDSPMixerCardSelector:public Fl_Widget
 {
 public:

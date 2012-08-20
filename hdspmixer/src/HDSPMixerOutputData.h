@@ -22,6 +22,10 @@
 #ifndef HDSPMixerOutputData_H
 #define HDSPMixerOutputData_H
 
+/*! \brief Data for Output
+ *
+ * \note This class seems unnecessary
+ */
 class HDSPMixerOutputData
 {
 public:

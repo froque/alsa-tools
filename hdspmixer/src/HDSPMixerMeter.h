@@ -32,6 +32,10 @@
 class HDSPMixerWindow;
 class HDSPMixerPeak;
 
+/*! \brief Meter Widget
+ *
+ * Draws the meter for Inputs, Playbacks and Outputs
+ */
 class HDSPMixerMeter:public Fl_Widget
 {
 private:

@@ -22,6 +22,10 @@
 #ifndef HDSPMixerPresetData_H
 #define HDSPMixerPresetData_H
 
+/*! \brief Preset Data
+ *
+ *  Provides data about a preset.
+ */
 class HDSPMixerPresetData
 {
 public:

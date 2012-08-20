@@ -30,6 +30,10 @@
 class HDSPMixerIOMixer;
 class HDSPMixerOutput;
 
+/*! \brief Gain text box Widget
+ *
+ *  Draws the text for the box under fader and meter for Inputs, Playbacks and Outputs
+ */
 class HDSPMixerGain:public Fl_Widget
 {
 private:
