@@ -21,6 +21,8 @@
 #pragma implementation
 #include "HDSPMixerFader.h"
 
+/*! \todo document weird expression for ndb
+ */
 HDSPMixerFader::HDSPMixerFader(int x, int y, double r, int id, int src):Fl_Widget(x, y, 13, 153)
 {
     index = id;
@@ -144,6 +146,8 @@ void HDSPMixerFader::set(int p)
     }
 }
 
+/*! \todo document weird expressions
+ */
 int HDSPMixerFader::posToInt(int p) {
     double x, y;
     

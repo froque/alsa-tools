@@ -107,7 +107,7 @@ int main(int argc, char **argv)
         printf("No RME cards found.\n");
         exit(EXIT_FAILURE);
     }
-
+    /*! \bug should have MAX_CARDS and not 3 */
     for (int i = cards; i < 3; ++i) {
         hdsp_cards[i] = NULL;
     }

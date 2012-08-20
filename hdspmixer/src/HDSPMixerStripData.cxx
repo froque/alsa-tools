@@ -23,6 +23,7 @@
 
 HDSPMixerStripData::HDSPMixerStripData() {
     dest = mute = solo = 0;
+    /*! \bug Should  be HDSP_MAX_DEST and not 14 */
     for (int i = 0; i < 14; i++) {
 	fader_pos[i] = pan_pos[i] = 0;
     }

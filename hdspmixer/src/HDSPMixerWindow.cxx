@@ -371,6 +371,7 @@ void HDSPMixerWindow::save()
 
     for (int speed = 0; speed < 3; ++speed) {
 	for (int card = 0; card < MAX_CARDS; ++card) {
+        /*!< \bug should be NUM_PRESETS or NUM_PRESETS-1 */
 	    for (int preset = 0; preset < 8; ++preset) {
 		for (int channel = 0; channel < HDSP_MAX_CHANNELS; ++channel) {
 		    /* inputs pans and volumes */
@@ -522,6 +523,7 @@ void HDSPMixerWindow::load()
 
     for (int speed = 0; speed < 3; ++speed) {
 	for (int card = 0; card < MAX_CARDS; ++card) {
+        /*!< \bug should be NUM_PRESETS or NUM_PRESETS-1 */
 	    for (int preset = 0; preset < 8; ++preset) {
 		for (int channel = 0; channel < channels_per_card; ++channel) {
 		    /* inputs pans and volumes */
@@ -775,7 +777,7 @@ void HDSPMixerWindow::restoreDefaults(int card)
 	/* should never happen */
 	return;
     }
-
+    /*!< \bug should be NUM_PRESETS or NUM_PRESETS-1 */
     for (int preset = 0; preset < 8; ++preset) {
 	for (int speed = 0; speed < num_modes; ++speed) {
 	    for (int i = 0; i < 2*maxdest[speed]; i+=2) {

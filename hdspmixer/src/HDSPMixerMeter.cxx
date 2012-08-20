@@ -115,6 +115,7 @@ int HDSPMixerMeter::logToHeight(double db)
     return h;
 }
 
+/*! \todo Document weird expressions and values in this function */
 void HDSPMixerMeter::update(int peak, int overs, int64 rms)
 {
     double fp, fr, db;
@@ -161,6 +162,7 @@ void HDSPMixerMeter::update(int peak, int overs, int64 rms)
     new_peak_height = logToHeight(db);
     
     fr = (double)rms;
+    /*! \todo Document weird expressions and values in this function */
     fr /= ((double)(1125899638407184.0)*(double)(8191.0));
     fr = sqrt(fr);
     
@@ -169,6 +171,7 @@ void HDSPMixerMeter::update(int peak, int overs, int64 rms)
     } else {
 	fr = -20 * log10(fr);
 	if (basew->setup->rmsplus3_val) {
+        /* 10*log(0.5) = -3.010299957 dB*/
 	    fr -= 3.010299957;
 	    if (fr < 0.0) fr = 0.0;
 	}
