@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -52,22 +52,22 @@ void HDSPMixerButtons::draw()
 {
     Fl_Widget *const* a = array();
     if (damage() & ~FL_DAMAGE_CHILD) {
-	draw_background();
-	for (int i=children(); i--;) {
-	    Fl_Widget& o = **a++;
-	    draw_child(o);
-	}
+        draw_background();
+        for (int i=children(); i--;) {
+            Fl_Widget& o = **a++;
+            draw_child(o);
+        }
     } else  {
-	for (int i=children(); i--;)  update_child(**a++);
-    }	
+        for (int i=children(); i--;)  update_child(**a++);
+    }
 }
 
 void HDSPMixerButtons::update_child(Fl_Widget& widget)
 {
     if (widget.damage() && widget.visible() && widget.type() < FL_WINDOW && fl_not_clipped(widget.x(), widget.y(), widget.w(), widget.h())) {
-	draw_background(widget.x(), widget.y(), widget.w(), widget.h());
-	widget.draw();
-	widget.clear_damage();
+        draw_background(widget.x(), widget.y(), widget.w(), widget.h());
+        widget.draw();
+        widget.clear_damage();
     }
 }
 

@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -40,20 +40,20 @@ void HDSPMixerPeak::draw()
 
 void HDSPMixerPeak::update(double maxlevel, int ovr) {
     if (ovr) {
-	snprintf(text, 10, "Ovr");
-	over = 1;
+        snprintf(text, 10, "Ovr");
+        over = 1;
     } else {
-	over = 0;
-	if (maxlevel <= 0.001) {
-	    snprintf(text, 10, "0.00");
-	} else if (maxlevel == 1000.0) {
-	    snprintf(text, 10, "-oo");
-	} else if (maxlevel >= 100.0) {
-	    snprintf(text, 10, "-%.1f", maxlevel);
-	} else {
-	    snprintf(text, 10, "-%.2f", maxlevel);
-	}
+        over = 0;
+        if (maxlevel <= 0.001) {
+            snprintf(text, 10, "0.00");
+        } else if (maxlevel == 1000.0) {
+            snprintf(text, 10, "-oo");
+        } else if (maxlevel >= 100.0) {
+            snprintf(text, 10, "-%.1f", maxlevel);
+        } else {
+            snprintf(text, 10, "-%.2f", maxlevel);
+        }
     }
-    redraw();    
+    redraw();
 }
 

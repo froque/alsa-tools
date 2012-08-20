@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -36,50 +36,50 @@ void HDSPMixerMuteSolo::draw()
     int gsolo = basew->inputs->buttons->master->solo;
     int gsolo_active = basew->inputs->buttons->master->solo_active;
     if (solo && gsolo) {
-	fl_push_clip(x()+17, y(), 13, 13);
-	fl_draw_pixmap(solo_xpm, x()+17, y());
-	fl_pop_clip();
+        fl_push_clip(x()+17, y(), 13, 13);
+        fl_draw_pixmap(solo_xpm, x()+17, y());      //upper part of solo.xpm: pink
+        fl_pop_clip();
     } else if (solo) {
-	fl_push_clip(x()+17, y(), 13, 13);
-	fl_draw_pixmap(solo_xpm, x()+17, y()-13);
-	fl_pop_clip();
+        fl_push_clip(x()+17, y(), 13, 13);
+        fl_draw_pixmap(solo_xpm, x()+17, y()-13);   //lower part of solo.xpm: red
+        fl_pop_clip();
     }
     if (((mute && gmute) || (gsolo && gsolo_active)) && !(solo && gsolo)) {
-	fl_push_clip(x(), y(), 13, 13);
-	fl_draw_pixmap(mute_xpm, x(), y());
-	fl_pop_clip();
+        fl_push_clip(x(), y(), 13, 13);
+        fl_draw_pixmap(mute_xpm, x(), y());         //upper part of mute.xpm: red
+        fl_pop_clip();
     } else if (mute) {
-	fl_push_clip(x(), y(), 13, 13);
-	fl_draw_pixmap(mute_xpm, x(), y()-13);
-	fl_pop_clip();
+        fl_push_clip(x(), y(), 13, 13);
+        fl_draw_pixmap(mute_xpm, x(), y()-13);      //lower part of mute.xpm: yellow
+        fl_pop_clip();
     }
 }
 
 void HDSPMixerMuteSolo::setMute(int m)
 {
     if (m != mute) {
-	mute = m;
-	if (mute) {
-	    basew->inputs->buttons->master->mute_active++;
-	} else {
-	    basew->inputs->buttons->master->mute_active--;
-	}
-	basew->refreshMixerStrip(index, source);
-	redraw();
+        mute = m;
+        if (mute) {
+            basew->inputs->buttons->master->mute_active++;
+        } else {
+            basew->inputs->buttons->master->mute_active--;
+        }
+        basew->refreshMixerStrip(index, source);
+        redraw();
     }
 }
 
 void HDSPMixerMuteSolo::setSolo(int s)
 {
     if (s != solo) {
-	solo = s;
-	if (solo) {
-	    basew->inputs->buttons->master->solo_active++;
-	} else {
-	    basew->inputs->buttons->master->solo_active--;
-	}
-	basew->refreshMixer();
-	redraw_all();
+        solo = s;
+        if (solo) {
+            basew->inputs->buttons->master->solo_active++;
+        } else {
+            basew->inputs->buttons->master->solo_active--;
+        }
+        basew->refreshMixer();
+        redraw_all();
     }
 }
 
@@ -88,53 +88,53 @@ int HDSPMixerMuteSolo::handle(int e)
     int button3 = Fl::event_button3();
     int xpos = Fl::event_x()-x();
     switch (e) {
-	case FL_PUSH:
-	    if (xpos < 13) {
-		if (mute) {
-		    mute = 0;
-		    basew->inputs->buttons->master->mute_active--;
-		} else {
-		    mute = 1;
-		    basew->inputs->buttons->master->mute_active++;
-		}
-		basew->inputs->buttons->master->redraw();
-		basew->refreshMixerStrip(index, source);
-		redraw();
-		if (button3)
-		    relative->setMute(mute);
-	    } else if (xpos > 16) {
-		if (solo) {
-		    solo = 0;
-		    basew->inputs->buttons->master->solo_active--;
-		} else {
-		    solo = 1;
-		    basew->inputs->buttons->master->solo_active++;
-		}
-		basew->inputs->buttons->master->redraw();
-		redraw();
-		basew->refreshMixerStrip(index, source);
-		if (button3) {
-		    relative->setSolo(solo);
-		} else {
-		    basew->refreshMixer();
-		    redraw_all();
-		}	
-	    }
-	    basew->checkState();
-	    return 1;
-	default:
-	    return Fl_Widget::handle(e);
-    }	 
+    case FL_PUSH:
+        if (xpos < 13) {
+            if (mute) {
+                mute = 0;
+                basew->inputs->buttons->master->mute_active--;
+            } else {
+                mute = 1;
+                basew->inputs->buttons->master->mute_active++;
+            }
+            basew->inputs->buttons->master->redraw();
+            basew->refreshMixerStrip(index, source);
+            redraw();
+            if (button3)
+                relative->setMute(mute);
+        } else if (xpos > 16) {
+            if (solo) {
+                solo = 0;
+                basew->inputs->buttons->master->solo_active--;
+            } else {
+                solo = 1;
+                basew->inputs->buttons->master->solo_active++;
+            }
+            basew->inputs->buttons->master->redraw();
+            redraw();
+            basew->refreshMixerStrip(index, source);
+            if (button3) {
+                relative->setSolo(solo);
+            } else {
+                basew->refreshMixer();
+                redraw_all();
+            }
+        }
+        basew->checkState();
+        return 1;
+    default:
+        return Fl_Widget::handle(e);
+    }
 }
 
 void HDSPMixerMuteSolo::redraw_all()
 {
     for (int i = 0; i < (basew->cards[basew->current_card]->channels_input); ++i) {
-	basew->inputs->strips[i]->mutesolo->redraw();
+        basew->inputs->strips[i]->mutesolo->redraw();
     }
 
     for (int i = 0; i < (basew->cards[basew->current_card]->channels_playback); ++i) {
-	basew->playbacks->strips[i]->mutesolo->redraw();	
+        basew->playbacks->strips[i]->mutesolo->redraw();
     }
 }
 
