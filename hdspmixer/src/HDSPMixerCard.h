@@ -47,9 +47,8 @@ private:
 
 public:
     HDSPMixerWindow *basew;
-    char name[6];
-    std::string cardname;
-    HDSPMixerCard(int cardtype, int id, char *shortname);
+    char name[6];               /*!< hw:%i */
+    std::string cardname;       /*!< shortname in main.c */
     int channels_input, channels_playback, window_width, window_height, card_id;
     int channels_output;
     int type;
@@ -60,6 +59,9 @@ public:
     char *meter_map_input, *meter_map_playback;
     int speed_mode;
     int playbacks_offset;
+    hdsp_9632_aeb_t h9632_aeb;
+
+    HDSPMixerCard(int cardtype, int id, char *shortname);
     void setMode(int mode);
     int initializeCard(HDSPMixerWindow *w);
     int getSpeed();
@@ -67,7 +69,6 @@ public:
     void actualizeStrips();
     void adjustSettings();
     void getAeb();
-    hdsp_9632_aeb_t h9632_aeb;
 };
 
 #endif

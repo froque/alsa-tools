@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -25,24 +25,24 @@ HDSPMixerIOMixer::HDSPMixerIOMixer(int x, int y, int w, int h, int ch, int type)
 {
     mixer_type = type;
     if (type) {
-	channel_name << "Out " << ch;
+        channel_name << "Out " << ch;
     } else {
-	channel_name << "In " << ch;
+        channel_name << "In " << ch;
     }
     channel_num = ch;
     if (channel_num%2) {
-	relative_num = channel_num+1;
-	p_iomixer_xpm = iomixer_xpm;
+        relative_num = channel_num+1;
+        p_iomixer_xpm = iomixer_xpm;
     } else {
-	relative_num = channel_num-1;
-	p_iomixer_xpm = iomixer_r_xpm;
+        relative_num = channel_num-1;
+        p_iomixer_xpm = iomixer_r_xpm;
     }
     for (int j = 0; j < MAX_CARDS; ++j) {
-	for (int i = 0; i < NUM_PRESETS; ++i) {
-	    data[j][0][i] = new HDSPMixerStripData();
-	    data[j][1][i] = new HDSPMixerStripData();
-	    data[j][2][i] = new HDSPMixerStripData();
-	}
+        for (int i = 0; i < NUM_PRESETS; ++i) {
+            data[j][0][i] = new HDSPMixerStripData();
+            data[j][1][i] = new HDSPMixerStripData();
+            data[j][2][i] = new HDSPMixerStripData();
+        }
     }
     mutesolo = new HDSPMixerMuteSolo(x+3, y+3, 0, 0, channel_num, type);
     gain = new HDSPMixerGain(x+3, y+207, 1);
@@ -70,29 +70,29 @@ void HDSPMixerIOMixer::draw()
 {
     Fl_Widget *const* a = array();
     if (damage() & ~FL_DAMAGE_CHILD) {
-	draw_background();
-	fl_color(FL_FOREGROUND_COLOR);
-	fl_font(FL_HELVETICA, 8);
-	fl_draw(channel_name.str().c_str(), x()+4, y()+225, 27, 9, FL_ALIGN_CENTER);
-	for (int i=children(); i--;) {
-	    Fl_Widget& o = **a++;
-	    draw_child(o);
-	}
+        draw_background();
+        fl_color(FL_FOREGROUND_COLOR);
+        fl_font(FL_HELVETICA, 8);
+        fl_draw(channel_name.str().c_str(), x()+4, y()+225, 27, 9, FL_ALIGN_CENTER);
+        for (int i=children(); i--;) {
+            Fl_Widget& o = **a++;
+            draw_child(o);
+        }
     } else {
-	for (int i=children(); i--;) update_child(**a++);
+        for (int i=children(); i--;) update_child(**a++);
     }
 }
 
 void HDSPMixerIOMixer::update_child(Fl_Widget& widget) 
 {
     if (widget.damage() && widget.visible() && widget.type() < FL_WINDOW && fl_not_clipped(widget.x(), widget.y(), widget.w(), widget.h())) {
-	if ((HDSPMixerMeter*)&widget == meter) {
-	    ((HDSPMixerMeter *)&widget)->fine_draw = 1;
-	} else {
-	    draw_background(widget.x(), widget.y(), widget.w(), widget.h());
-	}
-	widget.draw();
-	widget.clear_damage();
+        if ((HDSPMixerMeter*)&widget == meter) {
+            ((HDSPMixerMeter *)&widget)->fine_draw = 1;
+        } else {
+            draw_background(widget.x(), widget.y(), widget.w(), widget.h());
+        }
+        widget.draw();
+        widget.clear_damage();
     }
 }
 

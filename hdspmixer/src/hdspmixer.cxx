@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   Copyright (C) 2011 Adrian Knoth (adi@drcomp.erfurt.thur.de)
  *                      Fredrik Lingvall (fredrik.lingvall@gmail.com)
  *
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
             cards++;
         } else if (!strncmp(name, "RME Hammerfall DSP", 18)) {
             printf("Uninitialized HDSP card found.\nUse hdsploader to upload configuration data to the card.\n");
-        } 
+        }
     }
 
     free(name);
@@ -114,10 +114,10 @@ int main(int argc, char **argv)
 
     printf("%d RME cards %s found.\n", cards, (cards > 1) ? "cards" : "card");
     window = new HDSPMixerWindow(0, 0, hdsp_cards[0]->window_width,
-            hdsp_cards[0]->window_height, "HDSPMixer", hdsp_cards[0],
-            hdsp_cards[1], hdsp_cards[2]);
+                                 hdsp_cards[0]->window_height, "HDSPMixer", hdsp_cards[0],
+                                 hdsp_cards[1], hdsp_cards[2]);
     Fl::visual(FL_DOUBLE|FL_INDEX);
     window->show(argc, argv);
 
-    return Fl::run();    
+    return Fl::run();
 }

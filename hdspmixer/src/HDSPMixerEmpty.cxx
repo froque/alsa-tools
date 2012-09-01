@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -30,10 +30,10 @@ void HDSPMixerEmpty::draw()
 {
     if (fl_not_clipped(x(), y(), w(), h()) != 0) {
         if (linux_advertising) {
-	    fl_draw_pixmap(empty_linux_xpm, x(), y());
-	} else {
-    	    fl_draw_pixmap(empty_xpm, x(), y());
-	}
-    }  
+            fl_draw_pixmap(empty_linux_xpm, x(), y());
+        } else {
+            fl_draw_pixmap(empty_xpm, x(), y());
+        }
+    }
 }
 

@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -24,7 +24,7 @@
 HDSPMixerStripData::HDSPMixerStripData() {
     dest = mute = solo = 0;
     for (int i = 0; i < 14; i++) {
-	fader_pos[i] = pan_pos[i] = 0;
+        fader_pos[i] = pan_pos[i] = 0;
     }
 }
 

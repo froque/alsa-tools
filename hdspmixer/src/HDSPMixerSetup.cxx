@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -26,11 +26,11 @@ static void rate_cb(Fl_Widget *widget, void *arg)
     HDSPMixerWindow *w = (HDSPMixerWindow *)arg;
     const Fl_Menu_Item *i = ((Fl_Menu_ *)widget)->mvalue();
     if (!strncmp("s", i->label(), 1)) {
-	w->setup->rate_val = 0;
+        w->setup->rate_val = 0;
     } else if (!strncmp("m", i->label(), 1)) {
-	w->setup->rate_val = 1;
+        w->setup->rate_val = 1;
     } else {
-	w->setup->rate_val = 2;
+        w->setup->rate_val = 2;
     }
     w->checkState();
 }
@@ -83,9 +83,9 @@ static void rmsplus3_cb(Fl_Widget *widget, void *arg)
 {
     HDSPMixerWindow *w = (HDSPMixerWindow *)arg;
     if (w->setup->rmsplus3->value()) {
-	w->setup->rmsplus3_val = 1;
+        w->setup->rmsplus3_val = 1;
     } else {
-	w->setup->rmsplus3_val = 0;
+        w->setup->rmsplus3_val = 0;
     }
     w->checkState();
 }
@@ -94,7 +94,7 @@ static void rmsplus3_cb(Fl_Widget *widget, void *arg)
 HDSPMixerSetup::HDSPMixerSetup(int w, int h, char const *label, HDSPMixerWindow *win):Fl_Double_Window(w, h, label)
 {
     basew = win;
-    plm = new Fl_Group(10, 25, 380, 60, "Peak Level Meters");    
+    plm = new Fl_Group(10, 25, 380, 60, "Peak Level Meters");
     plm->labelfont(FL_HELVETICA);
     plm->labelsize(12);
     plm->align(FL_ALIGN_TOP_LEFT);
@@ -123,7 +123,7 @@ HDSPMixerSetup::HDSPMixerSetup(int w, int h, char const *label, HDSPMixerWindow 
     numbers->box(FL_ENGRAVED_FRAME);
     numbers->labelfont(FL_HELVETICA);
     numbers->labelsize(12);
-    numbers->align(FL_ALIGN_TOP_LEFT);    
+    numbers->align(FL_ALIGN_TOP_LEFT);
     rms = new Fl_Round_Button(30, 120, 60, 20, "RMS");
     rms->labelfont(FL_HELVETICA);
     rms->labelsize(12);
@@ -175,20 +175,20 @@ void HDSPMixerSetup::updateValues()
 {
     rmsplus3->value(rmsplus3_val);
     if (level_val) {
-	sixty->setonly();
+        sixty->setonly();
     } else {
-	fourty->setonly();
+        fourty->setonly();
     }
     if (numbers_val) {
-	peak->setonly();
+        peak->setonly();
     } else {
-	rms->setonly();
+        rms->setonly();
     }
     over->value(over_val);
-    rate->value(rate_val);    
+    rate->value(rate_val);
 #ifdef NON_MODAL_SETUP
     if (shown()) {
-	redraw();
+        redraw();
     }
 #endif
 }

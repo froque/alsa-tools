@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -33,9 +33,9 @@ HDSPMixerAbout::HDSPMixerAbout(int w, int h, char const *label, HDSPMixerWindow 
 int HDSPMixerAbout::handle(int e) {
     switch (e) {
     case FL_PUSH:
-	hide();
-	return 1;
+        hide();
+        return 1;
     default:
-	return Fl_Window::handle(e);
+        return Fl_Window::handle(e);
     }
 }
