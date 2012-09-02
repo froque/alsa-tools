@@ -565,3 +565,40 @@ int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
     return 0;
 }
 
+void HDSPMixerCard::setGain(int in, int out, int value)
+{
+    /* just a wrapper around the 'Mixer' ctl */
+
+    int err;
+
+    snd_ctl_elem_id_t *id;
+    snd_ctl_elem_value_t *ctl;
+    snd_ctl_t *handle;
+
+    //printf("setGain(%d, %d, %d)\n", in, out, value);
+
+    snd_ctl_elem_value_alloca(&ctl);
+    snd_ctl_elem_id_alloca(&id);
+    snd_ctl_elem_id_set_name(id, "Mixer");
+    snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_HWDEP);
+    snd_ctl_elem_id_set_device(id, 0);
+    snd_ctl_elem_id_set_index(id, 0);
+    snd_ctl_elem_value_set_id(ctl, id);
+
+    if ((err = snd_ctl_open(&handle, name, SND_CTL_NONBLOCK)) < 0) {
+        fprintf(stderr, "Alsa error 1: %s\n", snd_strerror(err));
+        return;
+    }
+
+    snd_ctl_elem_value_set_integer(ctl, 0, in);
+    snd_ctl_elem_value_set_integer(ctl, 1, out);
+    snd_ctl_elem_value_set_integer(ctl, 2, value);
+    if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
+        fprintf(stderr, "Alsa error 2: %s\n", snd_strerror(err));
+        snd_ctl_close(handle);
+        return;
+    }
+
+    snd_ctl_close(handle);
+
+}
