@@ -433,11 +433,7 @@ void HDSPMixerCard::adjustSettings() {
             meter_map_input = meter_map_playback = channel_map_raydat_qs;
             break;
         }
-
     }
-
-    window_width = (channels_playback+2)*STRIP_WIDTH;
-    window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
 }
 
 /*! 0 for normal speed
@@ -475,6 +471,8 @@ void HDSPMixerCard::setMode(int mode)
     basew->playbacks->init_sizes();
     basew->outputs->empty->position(STRIP_WIDTH*(channels_playback), basew->outputs->empty->y());
     basew->outputs->init_sizes();
+    int window_width = (channels_playback+2)*STRIP_WIDTH;
+    int window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
     basew->inputs->size(window_width, basew->inputs->h());
     basew->playbacks->size(window_width, basew->playbacks->h());
     basew->outputs->size(window_width, basew->outputs->h());

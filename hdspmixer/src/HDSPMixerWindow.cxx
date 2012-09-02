@@ -898,7 +898,7 @@ HDSPMixerWindow::HDSPMixerWindow(int x, int y, int w, int h, const char *label, 
     while (i < MAX_CARDS && cards[i] != NULL) {
         cards[i++]->initializeCard(this);
     }
-    size_range(MIN_WIDTH, MIN_HEIGHT, cards[current_card]->window_width, cards[current_card]->window_height);
+    size_range(MIN_WIDTH, MIN_HEIGHT, (cards[current_card]->channels_playback+2)*STRIP_WIDTH, FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT);
     cards[current_card]->resetMixer();
     if (file_name) {
         printf("Restoring last presets used\n");
@@ -972,7 +972,7 @@ void HDSPMixerWindow::reorder()
     }
     scroll->init_sizes();
     resize(x(), y(), w(), ytemp);
-    size_range(MIN_WIDTH, MIN_HEIGHT, cards[current_card]->window_width, ytemp);
+    size_range(MIN_WIDTH, MIN_HEIGHT, (cards[current_card]->channels_playback+2)*STRIP_WIDTH, ytemp);
 }
 
 void HDSPMixerWindow::checkState()

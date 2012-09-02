@@ -55,8 +55,6 @@ public:
     int channels_input;         /*!< number of input channels */
     int channels_playback;      /*!< number of playback channels */
     int channels_output;        /*!< number of output channels */
-    int window_width;           /* fixme: I don't think this belongs here. move to HDSPMixerWindows */
-    int window_height;          /* fixme: I don't think this belongs here. move to HDSPMixerWindows */
     int type;                   /*!< H9632, Multiface, Digiface, RPM, H9652, H9632,  HDSPeMADI, HDSPeAIO, HDSP_AES, HDSPeRayDAT */
     int last_preset;            /*!< Last activated preset before switching to another card */
     int last_dirty;             /*!< Last dirty flag before switching to another card */

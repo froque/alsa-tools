@@ -113,9 +113,7 @@ int main(int argc, char **argv)
     }
 
     printf("%d RME cards %s found.\n", cards, (cards > 1) ? "cards" : "card");
-    window = new HDSPMixerWindow(0, 0, hdsp_cards[0]->window_width,
-                                 hdsp_cards[0]->window_height, "HDSPMixer", hdsp_cards[0],
-                                 hdsp_cards[1], hdsp_cards[2]);
+    window = new HDSPMixerWindow(0, 0, 100, 100, "HDSPMixer", hdsp_cards[0], hdsp_cards[1], hdsp_cards[2]);
     Fl::visual(FL_DOUBLE|FL_INDEX);
     window->show(argc, argv);
 
