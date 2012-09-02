@@ -898,6 +898,7 @@ HDSPMixerWindow::HDSPMixerWindow(int x, int y, int w, int h, const char *label, 
     i = 0;
     while (i < MAX_CARDS && cards[i] != NULL) {
         cards[i++]->initializeCard(this);
+        actualizeStrips();
     }
     size_range(MIN_WIDTH, MIN_HEIGHT, (cards[current_card]->channels_playback+2)*STRIP_WIDTH, FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT);
     cards[current_card]->resetMixer();
@@ -1181,8 +1182,6 @@ muted:
     }
 }
 
-/*! Called from initializeCard() and setMode()
- */
 void HDSPMixerWindow::actualizeStrips()
 {
     for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {

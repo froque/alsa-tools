@@ -68,7 +68,7 @@ public:
     hdsp_9632_aeb_t h9632_aeb;  /*!< analog expansion boards for 9632*/
 
     HDSPMixerCard(int cardtype, int id, char *shortname);
-    void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */  /* fixme: Most of this function seems stupid to be in this class. move to HDSPMixerWindows */
+    void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */
     int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
     int getSpeed();             /*!< access card to get current speed */
     int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */  /* fixme: this should be private */

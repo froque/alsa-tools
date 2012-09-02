@@ -476,7 +476,6 @@ int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
         exit(EXIT_FAILURE);
     }
     basew = w;
-    basew->actualizeStrips();
     return 0;
 }
 
