@@ -47,6 +47,8 @@ private:
     char *channel_map_input;    /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
     char *channel_map_playback; /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
     char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
+    int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */
+    void getAeb();              /*!< gets information about AEB (analog expansion boards) */
 
 public:
     HDSPMixerWindow *basew;
@@ -62,7 +64,6 @@ public:
     char *meter_map_input;      /*!< used in readregister_cb for meters peak and rms values */
     char *meter_map_playback;   /*!< used in readregister_cb for meters peak and rms values */
     int speed_mode;             /*!< ADAT Speed: SS, DS, QS */
-    int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */ /* fixme: this kind of low level detail should not be public */
     hdsp_9632_aeb_t h9632_aeb;  /*!< analog expansion boards for 9632*/
 
     HDSPMixerCard(int cardtype, int id, char *shortname);
@@ -72,7 +73,6 @@ public:
     int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */  /* fixme: this should be private */
     void actualizeStrips();     /*!< updates strips view */ /* fixme: It seems stupid to be in this class. move to HDSPMixerWindows */
     void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */ /* fixme: this should be private */
-    void getAeb();              /*!< gets information about AEB (analog expansion boards) */ /* fixme: this should be private */
     void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
     void resetMixer();          /*!< clears all gains */
     void getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms); /*!< updates Peak and RMS values for MADI devices */

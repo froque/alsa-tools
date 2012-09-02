@@ -48,6 +48,7 @@ static void alsactl_cb(snd_async_handler_t *handler)
     snd_ctl_event_malloc(&event);
     
     while ((err = snd_ctl_read(ctl, event)) > 0) {
+        // what is 11 ?   Possible answer: is the index of array struct snd_kcontrol_new snd_hdsp_controls[] in the kernel driver: Sample Clock Source
         if (snd_ctl_event_elem_get_numid(event) == 11 && (card == card->basew->cards[card->basew->current_card])) {
             /* We have a clock change and are the focused card */
             snd_ctl_event_elem_get_id(event, elemid);
