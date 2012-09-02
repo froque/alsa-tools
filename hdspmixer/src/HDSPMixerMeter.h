@@ -44,7 +44,7 @@ private:
 public:
     int fine_draw;
     void draw();
-    void update(int peak, int overs, int64 rms);
+    void update(int peak, int overs, uint64_t rms);
     HDSPMixerMeter(int x, int y, bool not_output, HDSPMixerPeak *p);
 };
 

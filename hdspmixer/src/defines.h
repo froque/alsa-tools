@@ -55,7 +55,5 @@
  */
 #define NUM_PRESETS	9
 
-typedef unsigned long long int int64;
-
 #endif
 
