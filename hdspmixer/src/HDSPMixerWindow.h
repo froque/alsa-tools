@@ -87,7 +87,6 @@ public:
     void unsetSubmix();
     void setMixer(int idx, int src, int dest);
     void refreshMixer();
-    void resetMixer();
     void restoreDefaults(int card);
     void refreshMixerStrip(int idx, int src);
     void save();

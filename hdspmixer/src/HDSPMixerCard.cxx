@@ -483,7 +483,7 @@ void HDSPMixerCard::setMode(int mode)
     basew->size_range(MIN_WIDTH, MIN_HEIGHT, window_width, window_height);
     basew->resize(basew->x(), basew->y(), window_width, basew->h());
     basew->reorder();
-    basew->resetMixer();
+    resetMixer();
     basew->inputs->buttons->presets->preset_change(1);
 }
 
@@ -600,5 +600,15 @@ void HDSPMixerCard::setGain(int in, int out, int value)
     }
 
     snd_ctl_close(handle);
+
+}
+void HDSPMixerCard::resetMixer()
+{
+    int i, j;
+    for (i = 0; i < (playbacks_offset*2) ; ++i) {
+        for (j = 0; j < (playbacks_offset); ++j) {
+            setGain(i,j,0);
+        }
+    }
 
 }

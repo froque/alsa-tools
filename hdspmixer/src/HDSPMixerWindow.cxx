@@ -244,7 +244,7 @@ static void restore_defaults_cb(Fl_Widget *widget, void *arg)
     w->prefs->flush();
     w->file_name = NULL;
     w->setTitleWithFilename();
-    w->resetMixer();
+    w->cards[w->current_card]->resetMixer();
     while (i < MAX_CARDS && w->cards[i] != NULL) {
         w->restoreDefaults(i++);
     }
@@ -619,7 +619,7 @@ void HDSPMixerWindow::load()
     }
     fclose(file);
     setTitleWithFilename();
-    resetMixer();
+    cards[current_card]->resetMixer();
     inputs->buttons->presets->preset_change(1);
     return;
 load_error:
@@ -913,7 +913,7 @@ HDSPMixerWindow::HDSPMixerWindow(int x, int y, int w, int h, const char *label, 
         cards[i++]->initializeCard(this);
     }
     size_range(MIN_WIDTH, MIN_HEIGHT, cards[current_card]->window_width, cards[current_card]->window_height);
-    resetMixer();
+    cards[current_card]->resetMixer();
     if (file_name) {
         printf("Restoring last presets used\n");
         load();
@@ -1125,17 +1125,6 @@ void HDSPMixerWindow::refreshMixerStrip(int idx, int src)
     }
 }
 
-void HDSPMixerWindow::resetMixer()
-{
-    int i, j;
-    for (i = 0; i < (cards[current_card]->playbacks_offset*2) ; ++i) {
-        for (j = 0; j < (cards[current_card]->playbacks_offset); ++j) {
-            cards[current_card]->setGain(i,j,0);
-        }
-    }
-    
-}
-
 void HDSPMixerWindow::setMixer(int idx, int src, int dst)
 {
     /*  idx is the strip number (indexed fom 1)
@@ -1167,18 +1156,6 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
 
         double vol, pan, attenuation_l, attenuation_r, left_val, right_val;
 
-        snd_ctl_elem_value_alloca(&ctl);
-        snd_ctl_elem_id_alloca(&id);
-        snd_ctl_elem_id_set_name(id, "Mixer");
-        snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_HWDEP);
-        snd_ctl_elem_id_set_device(id, 0);
-        snd_ctl_elem_id_set_index(id, 0);
-        snd_ctl_elem_value_set_id(ctl, id);
-
-        if ((err = snd_ctl_open(&handle, cards[current_card]->name, SND_CTL_NONBLOCK)) < 0) {
-            fprintf(stderr, "Alsa error 3: %s\n", snd_strerror(err));
-            return;
-        }
 
         if (src) {
             if ((gmute && playbacks->strips[idx-1]->mutesolo->mute && !(playbacks->strips[idx-1]->mutesolo->solo && gsolo)) || (gsolo && gsolo_active && !(playbacks->strips[idx-1]->mutesolo->solo)) ) {
@@ -1206,24 +1183,9 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
         right_val = attenuation_r* vol * pan;
 
 muted: 	
-        snd_ctl_elem_value_set_integer(ctl, 0, src*cards[current_card]->playbacks_offset+channel_map[idx-1]);
-        snd_ctl_elem_value_set_integer(ctl, 1, cards[current_card]->dest_map[dst]);
-        snd_ctl_elem_value_set_integer(ctl, 2, (int)left_val);
-        if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
-            fprintf(stderr, "Alsa error 4: %s\n", snd_strerror(err));
-            snd_ctl_close(handle);
-            return;
-        }
+        cards[current_card]->setGain(src*cards[current_card]->playbacks_offset+channel_map[idx-1],cards[current_card]->dest_map[dst]  ,(int)left_val);
+        cards[current_card]->setGain(src*cards[current_card]->playbacks_offset+channel_map[idx-1],cards[current_card]->dest_map[dst]+1,(int)right_val);
 
-        snd_ctl_elem_value_set_integer(ctl, 0, src*cards[current_card]->playbacks_offset+channel_map[idx-1]);
-        snd_ctl_elem_value_set_integer(ctl, 1, cards[current_card]->dest_map[dst]+1);
-        snd_ctl_elem_value_set_integer(ctl, 2, (int)right_val);
-        if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
-            fprintf(stderr, "Alsa error 5: %s\n", snd_strerror(err));
-            snd_ctl_close(handle);
-            return;
-        }
-        snd_ctl_close(handle);
 
     } else if (src == 2) {
         int i, vol, dest;
