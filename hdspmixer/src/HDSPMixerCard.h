@@ -76,7 +76,8 @@ public:
     void getAeb();              /*!< gets information about AEB (analog expansion boards) */ /* fixme: this should be private */
     void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
     void resetMixer();          /*!< clears all gains */
-
+    void getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms); /*!< updates Peak and RMS values for MADI devices */
+    void getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms);            /*!< updates Peak and RMS values for non-MADI devices */
 };
 
 #endif

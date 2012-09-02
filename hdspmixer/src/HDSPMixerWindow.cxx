@@ -30,8 +30,6 @@ const char header[] = "HDSPMixer v1";
 
 static void readregisters_cb(void *arg)
 {
-    int err;
-    snd_hwdep_t *hw;
     hdsp_peak_rms_t hdsp_peak_rms;
     struct hdspm_peak_rms hdspm_peak_rms;
     bool isMADI = false;
@@ -45,29 +43,17 @@ static void readregisters_cb(void *arg)
         return;
     }
     
-    if ((err = snd_hwdep_open(&hw, w->cards[w->current_card]->name, SND_HWDEP_OPEN_READ)) < 0) {
-        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
-        return;
-    }
 
     if ((HDSPeMADI == w->cards[w->current_card]->type) ||
             (HDSPeAIO == w->cards[w->current_card]->type) ||
             (HDSP_AES == w->cards[w->current_card]->type) ||
             (HDSPeRayDAT == w->cards[w->current_card]->type)) {
         isMADI = true;
-        if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)&hdspm_peak_rms)) < 0) {
-            fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
-            snd_hwdep_close(hw);
-            return;
-        }
+            w->cards[w->current_card]->getPeakRmsMadi(&hdspm_peak_rms);
     } else {
-        if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)&hdsp_peak_rms)) < 0) {
-            fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
-            snd_hwdep_close(hw);
-            return;
-        }
+        w->cards[w->current_card]->getPeakRms(&hdsp_peak_rms);
     }
-    snd_hwdep_close(hw);
+
 
     if (isMADI) {
         // check for speed change
@@ -1132,9 +1118,6 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
     dst is the destination stereo channel
     */
     int err,gsolo_active,gmute_active, gmute, gsolo;
-    snd_ctl_elem_id_t *id;
-    snd_ctl_elem_value_t *ctl;
-    snd_ctl_t *handle;
 
     char *channel_map;
     
