@@ -59,6 +59,7 @@ static void readregisters_cb(void *arg)
         // check for speed change
         if (hdspm_peak_rms.speed != w->cards[w->current_card]->speed_mode) {
             w->cards[w->current_card]->setMode(hdspm_peak_rms.speed);
+            w->updateMode();
         }
         input_peaks = hdspm_peak_rms.input_peaks;
         playback_peaks = hdspm_peak_rms.playback_peaks;
@@ -1231,3 +1232,49 @@ void HDSPMixerWindow::actualizeStrips()
     }
     if (cards[current_card]->type != H9652 && cards[current_card]->type != H9632) outputs->empty->hide();
 }
+
+void HDSPMixerWindow::updateMode(){
+    HDSPMixerCard *card = cards[current_card];
+
+    actualizeStrips();
+
+    for (int i = 0; i < card->channels_input; ++i) {
+        inputs->strips[i]->targets->setLabels();
+    }
+    for (int i = 0; i < card->channels_playback; ++i) {
+        playbacks->strips[i]->targets->setLabels();
+    }
+    for (int i = 0; i < card->channels_output; ++i) {
+        outputs->strips[i]->setLabels();
+    }
+
+    if (card->h9632_aeb.aebo && !card->h9632_aeb.aebi) {
+        inputs->empty_aebi[0]->position(STRIP_WIDTH*(card->channels_input-4), inputs->empty_aebi[0]->y());
+        inputs->empty_aebi[1]->position(STRIP_WIDTH*(card->channels_input-2), inputs->empty_aebi[1]->y());
+    } else if (card->h9632_aeb.aebi && !card->h9632_aeb.aebo) {
+        playbacks->empty_aebo[0]->position(STRIP_WIDTH*(card->channels_playback-4), playbacks->empty_aebo[0]->y());
+        playbacks->empty_aebo[1]->position(STRIP_WIDTH*(card->channels_playback-2), playbacks->empty_aebo[1]->y());
+        outputs->empty_aebo[0]->position(STRIP_WIDTH*(card->channels_playback-4), outputs->empty_aebo[0]->y());
+        outputs->empty_aebo[1]->position(STRIP_WIDTH*(card->channels_playback-2), outputs->empty_aebo[1]->y());
+    }
+    inputs->buttons->position(STRIP_WIDTH*card->channels_input, inputs->buttons->y());
+    inputs->init_sizes();
+    playbacks->empty->position(STRIP_WIDTH*card->channels_playback, playbacks->empty->y());
+    playbacks->init_sizes();
+    outputs->empty->position(STRIP_WIDTH*(card->channels_playback), outputs->empty->y());
+    outputs->init_sizes();
+    int window_width = (card->channels_playback+2)*STRIP_WIDTH;
+    int window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
+    inputs->size(window_width, inputs->h());
+    playbacks->size(window_width, playbacks->h());
+    outputs->size(window_width, outputs->h());
+    scroll->init_sizes();
+    ((Fl_Widget *)(menubar))->size(window_width, menubar->h());
+    size_range(MIN_WIDTH, MIN_HEIGHT, window_width, window_height);
+    resize(x(), y(), window_width, h());
+    reorder();
+
+    inputs->buttons->presets->preset_change(1);
+}
+
+

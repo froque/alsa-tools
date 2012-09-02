@@ -61,14 +61,20 @@ static void alsactl_cb(snd_async_handler_t *handler)
             clock_value = snd_ctl_elem_value_get_enumerated(elemval, 0);
             if (clock_value == 0) {
                 int new_speed = card->getAutosyncSpeed();
-                if (new_speed >= 0 && new_speed != card->speed_mode) card->setMode(new_speed);
+                if (new_speed >= 0 && new_speed != card->speed_mode){
+                    card->setMode(new_speed);
+                    card->basew->updateMode();
+                }
             }
             if (clock_value > 3 && clock_value < 7 && card->speed_mode != 1) {
                 card->setMode(1);
+                card->basew->updateMode();
             } else if (clock_value < 4 && card->speed_mode != 0) {
                 card->setMode(0);
+                card->basew->updateMode();
             } else if (clock_value > 6 && card->speed_mode != 2) {
                 card->setMode(2);
+                card->basew->updateMode();
             }
         }
         snd_ctl_event_clear(event);
@@ -445,45 +451,7 @@ void HDSPMixerCard::setMode(int mode)
 {
     speed_mode = mode;
     adjustSettings();
-    basew->actualizeStrips();
-
-    for (int i = 0; i < channels_input; ++i) {
-        basew->inputs->strips[i]->targets->setLabels();
-    }
-    for (int i = 0; i < channels_playback; ++i) {
-        basew->playbacks->strips[i]->targets->setLabels();
-    }
-    for (int i = 0; i < channels_output; ++i) {
-        basew->outputs->strips[i]->setLabels();
-    }
-
-    if (h9632_aeb.aebo && !h9632_aeb.aebi) {
-        basew->inputs->empty_aebi[0]->position(STRIP_WIDTH*(channels_input-4), basew->inputs->empty_aebi[0]->y());
-        basew->inputs->empty_aebi[1]->position(STRIP_WIDTH*(channels_input-2), basew->inputs->empty_aebi[1]->y());
-    } else if (h9632_aeb.aebi && !h9632_aeb.aebo) {
-        basew->playbacks->empty_aebo[0]->position(STRIP_WIDTH*(channels_playback-4), basew->playbacks->empty_aebo[0]->y());
-        basew->playbacks->empty_aebo[1]->position(STRIP_WIDTH*(channels_playback-2), basew->playbacks->empty_aebo[1]->y());
-        basew->outputs->empty_aebo[0]->position(STRIP_WIDTH*(channels_playback-4), basew->outputs->empty_aebo[0]->y());
-        basew->outputs->empty_aebo[1]->position(STRIP_WIDTH*(channels_playback-2), basew->outputs->empty_aebo[1]->y());
-    }
-    basew->inputs->buttons->position(STRIP_WIDTH*channels_input, basew->inputs->buttons->y());
-    basew->inputs->init_sizes();
-    basew->playbacks->empty->position(STRIP_WIDTH*channels_playback, basew->playbacks->empty->y());
-    basew->playbacks->init_sizes();
-    basew->outputs->empty->position(STRIP_WIDTH*(channels_playback), basew->outputs->empty->y());
-    basew->outputs->init_sizes();
-    int window_width = (channels_playback+2)*STRIP_WIDTH;
-    int window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
-    basew->inputs->size(window_width, basew->inputs->h());
-    basew->playbacks->size(window_width, basew->playbacks->h());
-    basew->outputs->size(window_width, basew->outputs->h());
-    basew->scroll->init_sizes();
-    ((Fl_Widget *)(basew->menubar))->size(window_width, basew->menubar->h());
-    basew->size_range(MIN_WIDTH, MIN_HEIGHT, window_width, window_height);
-    basew->resize(basew->x(), basew->y(), window_width, basew->h());
-    basew->reorder();
     resetMixer();
-    basew->inputs->buttons->presets->preset_change(1);
 }
 
 /*! called from HDSPMixerWindow constructor

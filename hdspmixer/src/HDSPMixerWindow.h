@@ -96,6 +96,7 @@ public:
     void stashPreset();
     void unstashPreset();
     void actualizeStrips();
+    void updateMode();
 };
 
 #endif
