@@ -1119,17 +1119,6 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
     */
     int err,gsolo_active,gmute_active, gmute, gsolo;
 
-    char *channel_map;
-    
-    switch (src) {
-    case 0:
-        channel_map = cards[current_card]->channel_map_input;
-        break;
-    case 1:
-    case 2:
-        channel_map = cards[current_card]->channel_map_playback;
-    }
-
     gsolo_active = inputs->buttons->master->solo_active;
     gmute_active = inputs->buttons->master->mute_active;
     gsolo = inputs->buttons->master->solo;
@@ -1166,9 +1155,11 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
         right_val = attenuation_r* vol * pan;
 
 muted: 	
-        cards[current_card]->setGain(src*cards[current_card]->playbacks_offset+channel_map[idx-1],cards[current_card]->dest_map[dst]  ,(int)left_val);
-        cards[current_card]->setGain(src*cards[current_card]->playbacks_offset+channel_map[idx-1],cards[current_card]->dest_map[dst]+1,(int)right_val);
-
+        if (src == 0 ){
+            cards[current_card]->setInput(idx-1,dst,left_val,right_val);
+        } else {
+            cards[current_card]->setPlayback(idx-1,dst,left_val,right_val);
+        }
 
     } else if (src == 2) {
         int i, vol, dest;

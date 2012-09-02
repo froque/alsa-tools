@@ -613,6 +613,7 @@ void HDSPMixerCard::resetMixer()
 
 }
 
+/* fixme: this fucntion is called a lot. We could keep the hardware opened between calls */
 void HDSPMixerCard::getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms){
     snd_hwdep_t *hw;
     int err;
@@ -628,6 +629,7 @@ void HDSPMixerCard::getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms){
     snd_hwdep_close(hw);
 }
 
+/* fixme: this fucntion is called a lot. We could keep the hardware opened between calls, and share it with getPeakRmsMadi() */
 void HDSPMixerCard::getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms){
     snd_hwdep_t *hw;
     int err;
@@ -642,4 +644,13 @@ void HDSPMixerCard::getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms){
         return;
     }
     snd_hwdep_close(hw);
+}
+
+void HDSPMixerCard::setInput(int in_idx, int out_idx, int left_value,int right_value){
+    setGain(channel_map_input[in_idx],dest_map[out_idx], left_value);
+    setGain(channel_map_input[in_idx],dest_map[out_idx]+1, right_value);
+}
+void HDSPMixerCard::setPlayback(int in_idx, int out_idx, int left_value,int right_value){
+    setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx], left_value);
+    setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx]+1, right_value);
 }

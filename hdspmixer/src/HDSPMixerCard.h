@@ -44,10 +44,13 @@ class HDSPMixerCard
 private:
     snd_ctl_t *cb_handle;
     snd_async_handler_t *cb_handler;
+    char *channel_map_input;    /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
+    char *channel_map_playback; /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
+    char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
 
 public:
     HDSPMixerWindow *basew;
-    char name[6];               /*!< hw:%i */ /* fixme: this should be private */
+    char name[6];               /*!< hw:%i */
     std::string cardname;       /*!< shortname in main.c */
     int channels_input;         /*!< number of input channels */
     int channels_playback;      /*!< number of playback channels */
@@ -57,9 +60,7 @@ public:
     int type;                   /*!< H9632, Multiface, Digiface, RPM, H9652, H9632,  HDSPeMADI, HDSPeAIO, HDSP_AES, HDSPeRayDAT */
     int last_preset;            /*!< Last activated preset before switching to another card */
     int last_dirty;             /*!< Last dirty flag before switching to another card */
-    char *channel_map_input;    /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
-    char *channel_map_playback; /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
-    char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
+
     char *meter_map_input;      /*!< used in readregister_cb for meters peak and rms values */
     char *meter_map_playback;   /*!< used in readregister_cb for meters peak and rms values */
     int speed_mode;             /*!< ADAT Speed: SS, DS, QS */
@@ -78,6 +79,8 @@ public:
     void resetMixer();          /*!< clears all gains */
     void getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms); /*!< updates Peak and RMS values for MADI devices */
     void getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms);            /*!< updates Peak and RMS values for non-MADI devices */
+    void setInput(int in_idx, int out_idx, int left_value,int right_value);
+    void setPlayback(int in_idx, int out_idx, int left_value,int right_value);
 };
 
 #endif
