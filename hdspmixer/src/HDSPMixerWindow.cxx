@@ -43,13 +43,10 @@ static void readregisters_cb(void *arg)
         return;
     }
     
-
-    if ((HDSPeMADI == w->cards[w->current_card]->type) ||
-            (HDSPeAIO == w->cards[w->current_card]->type) ||
-            (HDSP_AES == w->cards[w->current_card]->type) ||
-            (HDSPeRayDAT == w->cards[w->current_card]->type)) {
+    int type = w->cards[w->current_card]->type;
+    if ((HDSPeMADI == type) || (HDSPeAIO == type) || (HDSP_AES == type) || (HDSPeRayDAT == type)) {
         isMADI = true;
-            w->cards[w->current_card]->getPeakRmsMadi(&hdspm_peak_rms);
+        w->cards[w->current_card]->getPeakRmsMadi(&hdspm_peak_rms);
     } else {
         w->cards[w->current_card]->getPeakRms(&hdsp_peak_rms);
     }
