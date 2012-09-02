@@ -535,7 +535,7 @@ void HDSPMixerCard::getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms){
         fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
         return;
     }
-    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)&hdspm_peak_rms)) < 0) {
+    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)hdspm_peak_rms)) < 0) {
         fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
         snd_hwdep_close(hw);
         return;
@@ -552,7 +552,7 @@ void HDSPMixerCard::getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms){
         return;
     }
 
-    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)&hdsp_peak_rms)) < 0) {
+    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)hdsp_peak_rms)) < 0) {
         fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
         snd_hwdep_close(hw);
         return;
