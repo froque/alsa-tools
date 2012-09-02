@@ -38,7 +38,7 @@
 int main(int argc, char **argv)
 {
     HDSPMixerWindow *window;
-    HDSPMixerCard *hdsp_cards[3];
+    HDSPMixerCard *hdsp_cards[MAX_CARDS];
     char *name, *shortname;
     int card;
     int cards = 0;
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     printf("Looking for RME cards:\n");
 
     while (snd_card_next(&card) >= 0) {
-        if (card < 0) {
+        if (card < 0 || card >= MAX_CARDS) {
             break;
         }
 
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    for (int i = cards; i < 3; ++i) {
+    for (int i = cards; i < MAX_CARDS; ++i) {
         hdsp_cards[i] = NULL;
     }
 
