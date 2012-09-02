@@ -76,6 +76,10 @@ static void alsactl_cb(snd_async_handler_t *handler)
     snd_ctl_event_free(event);
 }
 
+/*! returns 0 for normal speed
+ *  returns 1 for double speed
+ *  returns 2 for quad speed
+ */
 int HDSPMixerCard::getAutosyncSpeed()
 {
     int err, rate;
@@ -110,6 +114,10 @@ int HDSPMixerCard::getAutosyncSpeed()
     return 0;
 }
 
+/*! returns 0 for normal speed
+ *  returns 1 for double speed
+ *  returns 2 for quad speed
+ */
 int HDSPMixerCard::getSpeed()
 {
     int err, val;
@@ -166,8 +174,7 @@ int HDSPMixerCard::getSpeed()
 HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
 {
     type = cardtype;
-    card_id = id;
-    snprintf(name, 6, "hw:%i", card_id);
+    snprintf(name, 6, "hw:%i", id);
     cardname = shortname;
     h9632_aeb.aebi = 0;
     h9632_aeb.aebo = 0;
@@ -194,6 +201,7 @@ HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
 void HDSPMixerCard::getAeb() {
     int err;
     snd_hwdep_t *hw;
+    // fixme: this 2 lines don't seem necessary
     snd_hwdep_info_t *info;
     snd_hwdep_info_alloca(&info);
     if ((err = snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_DUPLEX)) != 0) {
@@ -432,6 +440,10 @@ void HDSPMixerCard::adjustSettings() {
     window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
 }
 
+/*! 0 for normal speed
+ *  1 for double speed
+ *  2 for quad speed
+ */
 void HDSPMixerCard::setMode(int mode)
 {
     speed_mode = mode;
@@ -475,6 +487,8 @@ void HDSPMixerCard::setMode(int mode)
     basew->inputs->buttons->presets->preset_change(1);
 }
 
+/*! Called from initializeCard() and setMode()
+ */
 void HDSPMixerCard::actualizeStrips()
 {
     for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {
@@ -525,6 +539,12 @@ void HDSPMixerCard::actualizeStrips()
     if (type != H9652 && type != H9632) basew->outputs->empty->hide();
 }
 
+/*! called from HDSPMixerWindow constructor
+ *
+ *  This class is contructed before the HDSPMixerWindow, so this basically passes a reference to the window
+ *
+ *  It also sets up a ALSA callback to all events
+ */
 int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
 {
     int err;

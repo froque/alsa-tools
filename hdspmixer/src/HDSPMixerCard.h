@@ -47,28 +47,33 @@ private:
 
 public:
     HDSPMixerWindow *basew;
-    char name[6];               /*!< hw:%i */
+    char name[6];               /*!< hw:%i */ /* fixme: this should be private */
     std::string cardname;       /*!< shortname in main.c */
-    int channels_input, channels_playback, window_width, window_height, card_id;
-    int channels_output;
-    int type;
-    int last_preset; /* Last activated preset before switching to another card */
-    int last_dirty; /* Last dirty flag before switching to another card */
-    char *channel_map_input, *channel_map_playback;
-    char *dest_map;
-    char *meter_map_input, *meter_map_playback;
-    int speed_mode;
-    int playbacks_offset;
-    hdsp_9632_aeb_t h9632_aeb;
+    int channels_input;         /*!< number of input channels */
+    int channels_playback;      /*!< number of playback channels */
+    int channels_output;        /*!< number of output channels */
+    int window_width;           /* fixme: I don't think this belongs here. move to HDSPMixerWindows */
+    int window_height;          /* fixme: I don't think this belongs here. move to HDSPMixerWindows */
+    int type;                   /*!< H9632, Multiface, Digiface, RPM, H9652, H9632,  HDSPeMADI, HDSPeAIO, HDSP_AES, HDSPeRayDAT */
+    int last_preset;            /*!< Last activated preset before switching to another card */
+    int last_dirty;             /*!< Last dirty flag before switching to another card */
+    char *channel_map_input;    /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
+    char *channel_map_playback; /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
+    char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */ /* fixme: this should be private */
+    char *meter_map_input;      /*!< used in readregister_cb for meters peak and rms values */
+    char *meter_map_playback;   /*!< used in readregister_cb for meters peak and rms values */
+    int speed_mode;             /*!< ADAT Speed: SS, DS, QS */
+    int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */ /* fixme: this kind of low level detail should not be public */
+    hdsp_9632_aeb_t h9632_aeb;  /*!< analog expansion boards for 9632*/
 
     HDSPMixerCard(int cardtype, int id, char *shortname);
-    void setMode(int mode);
-    int initializeCard(HDSPMixerWindow *w);
-    int getSpeed();
-    int getAutosyncSpeed();
-    void actualizeStrips();
-    void adjustSettings();
-    void getAeb();
+    void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */  /* fixme: Most of this function seems stupid to be in this class. move to HDSPMixerWindows */
+    int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
+    int getSpeed();             /*!< access card to get current speed */
+    int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */  /* fixme: this should be private */
+    void actualizeStrips();     /*!< updates strips view */ /* fixme: It seems stupid to be in this class. move to HDSPMixerWindows */
+    void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */ /* fixme: this should be private */
+    void getAeb();              /*!< gets information about AEB (analog expansion boards) */ /* fixme: this should be private */
 };
 
 #endif
