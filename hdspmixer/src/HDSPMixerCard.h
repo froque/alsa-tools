@@ -49,6 +49,7 @@ private:
     char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
     int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */
     void getAeb();              /*!< gets information about AEB (analog expansion boards) */
+    void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */
 
 public:
     HDSPMixerWindow *basew;
@@ -71,7 +72,7 @@ public:
     int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
     int getSpeed();             /*!< access card to get current speed */
     int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */  /* fixme: this should be private */
-    void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */ /* fixme: this should be private */
+
     void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
     void resetMixer();          /*!< clears all gains */
     void getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms); /*!< updates Peak and RMS values for MADI devices */
