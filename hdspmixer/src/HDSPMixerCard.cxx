@@ -445,7 +445,7 @@ void HDSPMixerCard::setMode(int mode)
 {
     speed_mode = mode;
     adjustSettings();
-    actualizeStrips();
+    basew->actualizeStrips();
 
     for (int i = 0; i < channels_input; ++i) {
         basew->inputs->strips[i]->targets->setLabels();
@@ -486,58 +486,6 @@ void HDSPMixerCard::setMode(int mode)
     basew->inputs->buttons->presets->preset_change(1);
 }
 
-/*! Called from initializeCard() and setMode()
- */
-void HDSPMixerCard::actualizeStrips()
-{
-    for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {
-        if (i < channels_input) {
-            basew->inputs->strips[i]->show();
-        } else {
-            basew->inputs->strips[i]->hide();
-        }
-
-        if (i < channels_playback) {
-            basew->playbacks->strips[i]->show();
-        } else {
-            basew->playbacks->strips[i]->hide();
-        }
-
-        if (i < channels_output) {
-            basew->outputs->strips[i]->show();
-        } else {
-            basew->outputs->strips[i]->hide();
-        }
-    }
-    if (h9632_aeb.aebi && !h9632_aeb.aebo) {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->hide();
-            basew->playbacks->empty_aebo[i]->show();
-            basew->outputs->empty_aebo[i]->show();
-        }
-        for (int i = channels_playback-4; i < channels_playback; ++i) {
-            basew->playbacks->strips[i]->hide();
-            basew->outputs->strips[i]->hide();
-        }
-    } else if (h9632_aeb.aebo && !h9632_aeb.aebi) {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->show();
-            basew->playbacks->empty_aebo[i]->hide();
-            basew->outputs->empty_aebo[i]->hide();
-        }
-        for (int i = channels_input-4; i < channels_input; ++i) {
-            basew->inputs->strips[i]->hide();
-        }
-    } else {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->hide();
-            basew->playbacks->empty_aebo[i]->hide();
-            basew->outputs->empty_aebo[i]->hide();
-        }
-    }
-    if (type != H9652 && type != H9632) basew->outputs->empty->hide();
-}
-
 /*! called from HDSPMixerWindow constructor
  *
  *  This class is contructed before the HDSPMixerWindow, so this basically passes a reference to the window
@@ -560,7 +508,7 @@ int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
         exit(EXIT_FAILURE);
     }
     basew = w;
-    actualizeStrips();
+    basew->actualizeStrips();
     return 0;
 }
 

@@ -1180,3 +1180,54 @@ muted:
     }
 }
 
+/*! Called from initializeCard() and setMode()
+ */
+void HDSPMixerWindow::actualizeStrips()
+{
+    for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {
+        if (i < cards[current_card]->channels_input) {
+            inputs->strips[i]->show();
+        } else {
+            inputs->strips[i]->hide();
+        }
+
+        if (i < cards[current_card]->channels_playback) {
+            playbacks->strips[i]->show();
+        } else {
+            playbacks->strips[i]->hide();
+        }
+
+        if (i < cards[current_card]->channels_output) {
+            outputs->strips[i]->show();
+        } else {
+            outputs->strips[i]->hide();
+        }
+    }
+    if (cards[current_card]->h9632_aeb.aebi && !cards[current_card]->h9632_aeb.aebo) {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->hide();
+            playbacks->empty_aebo[i]->show();
+            outputs->empty_aebo[i]->show();
+        }
+        for (int i = cards[current_card]->channels_playback-4; i < cards[current_card]->channels_playback; ++i) {
+            playbacks->strips[i]->hide();
+            outputs->strips[i]->hide();
+        }
+    } else if (cards[current_card]->h9632_aeb.aebo && !cards[current_card]->h9632_aeb.aebi) {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->show();
+            playbacks->empty_aebo[i]->hide();
+            outputs->empty_aebo[i]->hide();
+        }
+        for (int i = cards[current_card]->channels_input-4; i < cards[current_card]->channels_input; ++i) {
+            inputs->strips[i]->hide();
+        }
+    } else {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->hide();
+            playbacks->empty_aebo[i]->hide();
+            outputs->empty_aebo[i]->hide();
+        }
+    }
+    if (cards[current_card]->type != H9652 && cards[current_card]->type != H9632) outputs->empty->hide();
+}

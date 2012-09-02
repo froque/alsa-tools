@@ -95,6 +95,7 @@ public:
     void setTitleWithFilename();
     void stashPreset();
     void unstashPreset();
+    void actualizeStrips();
 };
 
 #endif
