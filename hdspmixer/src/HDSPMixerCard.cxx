@@ -203,6 +203,11 @@ HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
     last_preset = last_dirty = 0;
 
     basew = NULL;
+    hw = NULL;
+}
+
+HDSPMixerCard::~HDSPMixerCard(){
+    closeHW();
 }
 
 void HDSPMixerCard::getAeb() {
@@ -476,6 +481,7 @@ int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
         exit(EXIT_FAILURE);
     }
     basew = w;
+    openHW();
     return 0;
 }
 
@@ -514,8 +520,8 @@ void HDSPMixerCard::setGain(int in, int out, int value)
     }
 
     snd_ctl_close(handle);
-
 }
+
 void HDSPMixerCard::resetMixer()
 {
     int i, j;
@@ -524,40 +530,28 @@ void HDSPMixerCard::resetMixer()
             setGain(i,j,0);
         }
     }
-
 }
 
-/* fixme: this fucntion is called a lot. We could keep the hardware opened between calls */
 void HDSPMixerCard::getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms){
-    snd_hwdep_t *hw;
-    int err;
-    if ((err = snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_READ)) < 0) {
-        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
+    if (isOpenHW() == false ){
         return;
     }
-    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)hdspm_peak_rms)) < 0) {
+    if ((snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)hdspm_peak_rms)) < 0) {
         fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
         snd_hwdep_close(hw);
         return;
     }
-    snd_hwdep_close(hw);
 }
 
-/* fixme: this fucntion is called a lot. We could keep the hardware opened between calls, and share it with getPeakRmsMadi() */
 void HDSPMixerCard::getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms){
-    snd_hwdep_t *hw;
-    int err;
-    if ((err = snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_READ)) < 0) {
-        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
+    if (isOpenHW() == false ){
         return;
     }
-
-    if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)hdsp_peak_rms)) < 0) {
+    if ((snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)hdsp_peak_rms)) < 0) {
         fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
         snd_hwdep_close(hw);
         return;
     }
-    snd_hwdep_close(hw);
 }
 
 void HDSPMixerCard::setInput(int in_idx, int out_idx, int left_value,int right_value){
@@ -567,4 +561,26 @@ void HDSPMixerCard::setInput(int in_idx, int out_idx, int left_value,int right_v
 void HDSPMixerCard::setPlayback(int in_idx, int out_idx, int left_value,int right_value){
     setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx], left_value);
     setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx]+1, right_value);
+}
+
+void HDSPMixerCard::openHW(){
+    if (isOpenHW() == true ){
+        return;
+    }
+    if (( snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_READ)) < 0) {
+        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
+        return;
+    }
+}
+
+void HDSPMixerCard::closeHW(){
+    snd_hwdep_close(hw);
+    hw = NULL;
+}
+bool HDSPMixerCard::isOpenHW(){
+    if(hw != NULL){
+        return true;
+    } else {
+        return false;
+    }
 }

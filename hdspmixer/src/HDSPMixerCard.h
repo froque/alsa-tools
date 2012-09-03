@@ -50,6 +50,10 @@ private:
     int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */
     void getAeb();              /*!< gets information about AEB (analog expansion boards) */
     void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */
+    snd_hwdep_t *hw;            /*!< handler for hardware specific calls */
+    void openHW();              /*!< open hardware for setting gains */
+    void closeHW();             /*!< closes hardware */
+    bool isOpenHW();            /*!< checks if hardware is opened */
 
 public:
     HDSPMixerWindow *basew;
@@ -68,6 +72,7 @@ public:
     hdsp_9632_aeb_t h9632_aeb;  /*!< analog expansion boards for 9632*/
 
     HDSPMixerCard(int cardtype, int id, char *shortname);
+    ~HDSPMixerCard();
     void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */
     int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
     int getSpeed();             /*!< access card to get current speed */
