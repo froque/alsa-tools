@@ -26,7 +26,7 @@
 
 static void alsactl_cb(snd_async_handler_t *handler)
 {
-    int err, clock_value;
+    int err;
     snd_ctl_t *ctl;
     snd_ctl_event_t *event;
     snd_ctl_elem_value_t *elemval;
@@ -58,28 +58,14 @@ static void alsactl_cb(snd_async_handler_t *handler)
                 snd_ctl_event_free(event);
                 return;
             }
-            clock_value = snd_ctl_elem_value_get_enumerated(elemval, 0);
-            if (clock_value == 0) {
-                int new_speed = card->getAutosyncSpeed();
-                if (new_speed >= 0 && new_speed != card->speed_mode){
-                    card->setMode(new_speed);
-                    card->basew->updateMode();
-                }
-            }
-            if (clock_value > 3 && clock_value < 7 && card->speed_mode != 1) {
-                card->setMode(1);
-                card->basew->updateMode();
-            } else if (clock_value < 4 && card->speed_mode != 0) {
-                card->setMode(0);
-                card->basew->updateMode();
-            } else if (clock_value > 6 && card->speed_mode != 2) {
-                card->setMode(2);
+            int speed = card->getSpeed();
+            if(speed != card->speed_mode){
+                card->setMode(speed);
                 card->basew->updateMode();
             }
         }
         snd_ctl_event_clear(event);
     }
-    
     snd_ctl_event_free(event);
 }
 

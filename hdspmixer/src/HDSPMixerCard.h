@@ -54,6 +54,7 @@ private:
     void openHW();              /*!< open hardware for setting gains */
     void closeHW();             /*!< closes hardware */
     bool isOpenHW();            /*!< checks if hardware is opened */
+    int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */
 
 public:
     HDSPMixerWindow *basew;
@@ -76,7 +77,6 @@ public:
     void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */
     int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
     int getSpeed();             /*!< access card to get current speed */
-    int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */  /* fixme: this should be private */
 
     void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
     void resetMixer();          /*!< clears all gains */
