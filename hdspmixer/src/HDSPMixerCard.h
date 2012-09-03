@@ -46,32 +46,51 @@ class HDSPMixerWindow;
 class HDSPMixerCard
 {
 private:
-    snd_ctl_t *cb_handle;
+    snd_ctl_t *ctl_handle;
     snd_async_handler_t *cb_handler;
+    char *channel_map_input;    /*!< used in setInput()*/
+    char *channel_map_playback; /*!< used in setPlayback() */
+    char *dest_map;             /*!< used in setInput() and setPlayback() */
+    int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */
+    void getAeb();              /*!< gets information about AEB (analog expansion boards) */
+    void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */
+    snd_hwdep_t *hw;            /*!< handler for hardware specific calls */
+    void openHW();              /*!< open hardware */
+    void closeHW();             /*!< closes hardware */
+    bool isOpenHW();            /*!< checks if hardware is opened */
+    void openCtl();             /*!< open ctl interface */
+    void closeCtl();            /*!< closes ctl interface */
+    bool isOpenCtl();           /*!< checks if ctl interface is opened */
+    int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */
 
 public:
     HDSPMixerWindow *basew;
-    char name[6];
-    std::string cardname;
+    char name[6];               /*!< hw:%i */
+    std::string cardname;       /*!< shortname in main.c */
+    int channels_input;         /*!< number of input channels */
+    int channels_playback;      /*!< number of playback channels */
+    int channels_output;        /*!< number of output channels */
+    int type;                   /*!< H9632, Multiface, Digiface, RPM, H9652, H9632,  HDSPeMADI, HDSPeAIO, HDSP_AES, HDSPeRayDAT */
+    int last_preset;            /*!< Last activated preset before switching to another card */
+    int last_dirty;             /*!< Last dirty flag before switching to another card */
+
+    char *meter_map_input;      /*!< used in readregister_cb for meters peak and rms values */
+    char *meter_map_playback;   /*!< used in readregister_cb for meters peak and rms values */
+    int speed_mode;             /*!< ADAT Speed: SS, DS, QS */
+    hdsp_9632_aeb_t h9632_aeb;  /*!< analog expansion boards for 9632*/
+
     HDSPMixerCard(int cardtype, int id, char *shortname);
-    int channels_input, channels_playback, window_width, window_height, card_id;
-    int channels_output;
-    int type;
-    int last_preset; /* Last activated preset before switching to another card */
-    int last_dirty; /* Last dirty flag before switching to another card */
-    char *channel_map_input, *channel_map_playback;
-    char *dest_map;
-    char *meter_map_input, *meter_map_playback;
-    int speed_mode;                                 /*!< ADAT speed*/
-    int playbacks_offset;
-    void setMode(int mode);
-    int initializeCard(HDSPMixerWindow *w);
-    int getSpeed();
-    int getAutosyncSpeed();
-    void actualizeStrips();
-    void adjustSettings();
-    void getAeb();
-    hdsp_9632_aeb_t h9632_aeb;
+    ~HDSPMixerCard();
+    void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */
+    int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */
+    int getSpeed();             /*!< access card to get current speed */
+
+    void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
+    void resetMixer();          /*!< clears all gains */
+    void getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms); /*!< updates Peak and RMS values for MADI devices */
+    void getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms);            /*!< updates Peak and RMS values for non-MADI devices */
+    void setInput(int in_idx, int out_idx, int left_value,int right_value);
+    void setPlayback(int in_idx, int out_idx, int left_value,int right_value);
 };
 
 #endif

@@ -55,10 +55,5 @@
  */
 #define NUM_PRESETS     9
 
-/*!
- * \bug Should use uint64_t
- */
-typedef unsigned long long int int64;
-
 #endif
 

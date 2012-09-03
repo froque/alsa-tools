@@ -30,8 +30,6 @@ const char header[] = "HDSPMixer v1";
 
 static void readregisters_cb(void *arg)
 {
-    int err;
-    snd_hwdep_t *hw;
     hdsp_peak_rms_t hdsp_peak_rms;
     struct hdspm_peak_rms hdspm_peak_rms;
     bool isMADI = false;
@@ -45,34 +43,20 @@ static void readregisters_cb(void *arg)
         return;
     }
     
-    if ((err = snd_hwdep_open(&hw, w->cards[w->current_card]->name, SND_HWDEP_OPEN_READ)) < 0) {
-        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
-        return;
+    int type = w->cards[w->current_card]->type;
+    if ((HDSPeMADI == type) || (HDSPeAIO == type) || (HDSP_AES == type) || (HDSPeRayDAT == type)) {
+        isMADI = true;
+        w->cards[w->current_card]->getPeakRmsMadi(&hdspm_peak_rms);
+    } else {
+        w->cards[w->current_card]->getPeakRms(&hdsp_peak_rms);
     }
 
-    if ((HDSPeMADI == w->cards[w->current_card]->type) ||
-            (HDSPeAIO == w->cards[w->current_card]->type) ||
-            (HDSP_AES == w->cards[w->current_card]->type) ||
-            (HDSPeRayDAT == w->cards[w->current_card]->type)) {
-        isMADI = true;
-        if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)&hdspm_peak_rms)) < 0) {
-            fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
-            snd_hwdep_close(hw);
-            return;
-        }
-    } else {
-        if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)&hdsp_peak_rms)) < 0) {
-            fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
-            snd_hwdep_close(hw);
-            return;
-        }
-    }
-    snd_hwdep_close(hw);
 
     if (isMADI) {
         // check for speed change
         if (hdspm_peak_rms.speed != w->cards[w->current_card]->speed_mode) {
             w->cards[w->current_card]->setMode(hdspm_peak_rms.speed);
+            w->updateMode();
         }
         input_peaks = hdspm_peak_rms.input_peaks;
         playback_peaks = hdspm_peak_rms.playback_peaks;
@@ -244,7 +228,7 @@ static void restore_defaults_cb(Fl_Widget *widget, void *arg)
     w->prefs->flush();
     w->file_name = NULL;
     w->setTitleWithFilename();
-    w->resetMixer();
+    w->cards[w->current_card]->resetMixer();
     while (i < MAX_CARDS && w->cards[i] != NULL) {
         w->restoreDefaults(i++);
     }
@@ -621,7 +605,7 @@ void HDSPMixerWindow::load()
     }
     fclose(file);
     setTitleWithFilename();
-    resetMixer();
+    cards[current_card]->resetMixer();
     inputs->buttons->presets->preset_change(1);
     return;
 load_error:
@@ -913,9 +897,10 @@ HDSPMixerWindow::HDSPMixerWindow(int x, int y, int w, int h, const char *label, 
     i = 0;
     while (i < MAX_CARDS && cards[i] != NULL) {
         cards[i++]->initializeCard(this);
+        actualizeStrips();
     }
-    size_range(MIN_WIDTH, MIN_HEIGHT, cards[current_card]->window_width, cards[current_card]->window_height);
-    resetMixer();
+    size_range(MIN_WIDTH, MIN_HEIGHT, (cards[current_card]->channels_playback+2)*STRIP_WIDTH, FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT);
+    cards[current_card]->resetMixer();
     if (file_name) {
         printf("Restoring last presets used\n");
         load();
@@ -949,6 +934,9 @@ void HDSPMixerWindow::resize(int x, int y, int w, int h)
     scroll->resize (0, 0, w, h);
 }
 
+/*! reorder after changing which strips are shown
+ *
+ */
 void HDSPMixerWindow::reorder()
 {
     int xpos = scroll->x();
@@ -985,7 +973,7 @@ void HDSPMixerWindow::reorder()
     }
     scroll->init_sizes();
     resize(x(), y(), w(), ytemp);
-    size_range(MIN_WIDTH, MIN_HEIGHT, cards[current_card]->window_width, ytemp);
+    size_range(MIN_WIDTH, MIN_HEIGHT, (cards[current_card]->channels_playback+2)*STRIP_WIDTH, ytemp);
 }
 
 void HDSPMixerWindow::checkState()
@@ -1124,55 +1112,6 @@ void HDSPMixerWindow::refreshMixerStrip(int idx, int src)
     }
 }
 
-void HDSPMixerWindow::resetMixer()
-{
-    int i, j;
-    for (i = 0; i < (cards[current_card]->playbacks_offset*2) ; ++i) {
-        for (j = 0; j < (cards[current_card]->playbacks_offset); ++j) {
-            setGain(i, j, 0);
-        }
-    }
-    
-}
-
-void HDSPMixerWindow::setGain(int in, int out, int value)
-{
-    /* just a wrapper around the 'Mixer' ctl */
-
-    int err;
-    
-    snd_ctl_elem_id_t *id;
-    snd_ctl_elem_value_t *ctl;
-    snd_ctl_t *handle;
-
-    //printf("setGain(%d, %d, %d)\n", in, out, value);
-    
-    snd_ctl_elem_value_alloca(&ctl);
-    snd_ctl_elem_id_alloca(&id);
-    snd_ctl_elem_id_set_name(id, "Mixer");
-    snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_HWDEP);
-    snd_ctl_elem_id_set_device(id, 0);
-    snd_ctl_elem_id_set_index(id, 0);
-    snd_ctl_elem_value_set_id(ctl, id);
-
-    if ((err = snd_ctl_open(&handle, cards[current_card]->name, SND_CTL_NONBLOCK)) < 0) {
-        fprintf(stderr, "Alsa error 1: %s\n", snd_strerror(err));
-        return;
-    }
-
-    snd_ctl_elem_value_set_integer(ctl, 0, in);
-    snd_ctl_elem_value_set_integer(ctl, 1, out);
-    snd_ctl_elem_value_set_integer(ctl, 2, value);
-    if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
-        fprintf(stderr, "Alsa error 2: %s\n", snd_strerror(err));
-        snd_ctl_close(handle);
-        return;
-    }
-    
-    snd_ctl_close(handle);
-    
-}
-
 void HDSPMixerWindow::setMixer(int idx, int src, int dst)
 {
     /*  idx is the strip number (indexed fom 1)
@@ -1180,20 +1119,6 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
     dst is the destination stereo channel
     */
     int err,gsolo_active,gmute_active, gmute, gsolo;
-    snd_ctl_elem_id_t *id;
-    snd_ctl_elem_value_t *ctl;
-    snd_ctl_t *handle;
-
-    char *channel_map;
-    
-    switch (src) {
-    case 0:
-        channel_map = cards[current_card]->channel_map_input;
-        break;
-    case 1:
-    case 2:
-        channel_map = cards[current_card]->channel_map_playback;
-    }
 
     gsolo_active = inputs->buttons->master->solo_active;
     gmute_active = inputs->buttons->master->mute_active;
@@ -1203,19 +1128,6 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
     if (src == 0 || src == 1) {
 
         double vol, pan, attenuation_l, attenuation_r, left_val, right_val;
-
-        snd_ctl_elem_value_alloca(&ctl);
-        snd_ctl_elem_id_alloca(&id);
-        snd_ctl_elem_id_set_name(id, "Mixer");
-        snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_HWDEP);
-        snd_ctl_elem_id_set_device(id, 0);
-        snd_ctl_elem_id_set_index(id, 0);
-        snd_ctl_elem_value_set_id(ctl, id);
-
-        if ((err = snd_ctl_open(&handle, cards[current_card]->name, SND_CTL_NONBLOCK)) < 0) {
-            fprintf(stderr, "Alsa error 3: %s\n", snd_strerror(err));
-            return;
-        }
 
         if (src) {
             if ((gmute && playbacks->strips[idx-1]->mutesolo->mute && !(playbacks->strips[idx-1]->mutesolo->solo && gsolo)) || (gsolo && gsolo_active && !(playbacks->strips[idx-1]->mutesolo->solo)) ) {
@@ -1242,25 +1154,12 @@ void HDSPMixerWindow::setMixer(int idx, int src, int dst)
         left_val = attenuation_l* vol * (1.0 - pan);
         right_val = attenuation_r* vol * pan;
 
-muted: 	
-        snd_ctl_elem_value_set_integer(ctl, 0, src*cards[current_card]->playbacks_offset+channel_map[idx-1]);
-        snd_ctl_elem_value_set_integer(ctl, 1, cards[current_card]->dest_map[dst]);
-        snd_ctl_elem_value_set_integer(ctl, 2, (int)left_val);
-        if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
-            fprintf(stderr, "Alsa error 4: %s\n", snd_strerror(err));
-            snd_ctl_close(handle);
-            return;
+muted:
+        if (src == 0 ){
+            cards[current_card]->setInput(idx-1,dst,left_val,right_val);
+        } else {
+            cards[current_card]->setPlayback(idx-1,dst,left_val,right_val);
         }
-
-        snd_ctl_elem_value_set_integer(ctl, 0, src*cards[current_card]->playbacks_offset+channel_map[idx-1]);
-        snd_ctl_elem_value_set_integer(ctl, 1, cards[current_card]->dest_map[dst]+1);
-        snd_ctl_elem_value_set_integer(ctl, 2, (int)right_val);
-        if ((err = snd_ctl_elem_write(handle, ctl)) < 0) {
-            fprintf(stderr, "Alsa error 5: %s\n", snd_strerror(err));
-            snd_ctl_close(handle);
-            return;
-        }
-        snd_ctl_close(handle);
 
     } else if (src == 2) {
         int i, vol, dest;
@@ -1280,4 +1179,99 @@ muted:
         }
     }
 }
+
+void HDSPMixerWindow::actualizeStrips()
+{
+    for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {
+        if (i < cards[current_card]->channels_input) {
+            inputs->strips[i]->show();
+        } else {
+            inputs->strips[i]->hide();
+        }
+
+        if (i < cards[current_card]->channels_playback) {
+            playbacks->strips[i]->show();
+        } else {
+            playbacks->strips[i]->hide();
+        }
+
+        if (i < cards[current_card]->channels_output) {
+            outputs->strips[i]->show();
+        } else {
+            outputs->strips[i]->hide();
+        }
+    }
+    if (cards[current_card]->h9632_aeb.aebi && !cards[current_card]->h9632_aeb.aebo) {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->hide();
+            playbacks->empty_aebo[i]->show();
+            outputs->empty_aebo[i]->show();
+        }
+        for (int i = cards[current_card]->channels_playback-4; i < cards[current_card]->channels_playback; ++i) {
+            playbacks->strips[i]->hide();
+            outputs->strips[i]->hide();
+        }
+    } else if (cards[current_card]->h9632_aeb.aebo && !cards[current_card]->h9632_aeb.aebi) {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->show();
+            playbacks->empty_aebo[i]->hide();
+            outputs->empty_aebo[i]->hide();
+        }
+        for (int i = cards[current_card]->channels_input-4; i < cards[current_card]->channels_input; ++i) {
+            inputs->strips[i]->hide();
+        }
+    } else {
+        for (int i = 0; i < 2; ++i) {
+            inputs->empty_aebi[i]->hide();
+            playbacks->empty_aebo[i]->hide();
+            outputs->empty_aebo[i]->hide();
+        }
+    }
+    if (cards[current_card]->type != H9652 && cards[current_card]->type != H9632) outputs->empty->hide();
+}
+
+void HDSPMixerWindow::updateMode(){
+    HDSPMixerCard *card = cards[current_card];
+
+    actualizeStrips();
+
+    for (int i = 0; i < card->channels_input; ++i) {
+        inputs->strips[i]->targets->setLabels();
+    }
+    for (int i = 0; i < card->channels_playback; ++i) {
+        playbacks->strips[i]->targets->setLabels();
+    }
+    for (int i = 0; i < card->channels_output; ++i) {
+        outputs->strips[i]->setLabels();
+    }
+
+    if (card->h9632_aeb.aebo && !card->h9632_aeb.aebi) {
+        inputs->empty_aebi[0]->position(STRIP_WIDTH*(card->channels_input-4), inputs->empty_aebi[0]->y());
+        inputs->empty_aebi[1]->position(STRIP_WIDTH*(card->channels_input-2), inputs->empty_aebi[1]->y());
+    } else if (card->h9632_aeb.aebi && !card->h9632_aeb.aebo) {
+        playbacks->empty_aebo[0]->position(STRIP_WIDTH*(card->channels_playback-4), playbacks->empty_aebo[0]->y());
+        playbacks->empty_aebo[1]->position(STRIP_WIDTH*(card->channels_playback-2), playbacks->empty_aebo[1]->y());
+        outputs->empty_aebo[0]->position(STRIP_WIDTH*(card->channels_playback-4), outputs->empty_aebo[0]->y());
+        outputs->empty_aebo[1]->position(STRIP_WIDTH*(card->channels_playback-2), outputs->empty_aebo[1]->y());
+    }
+    inputs->buttons->position(STRIP_WIDTH*card->channels_input, inputs->buttons->y());
+    inputs->init_sizes();
+    playbacks->empty->position(STRIP_WIDTH*card->channels_playback, playbacks->empty->y());
+    playbacks->init_sizes();
+    outputs->empty->position(STRIP_WIDTH*(card->channels_playback), outputs->empty->y());
+    outputs->init_sizes();
+    int window_width = (card->channels_playback+2)*STRIP_WIDTH;
+    int window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
+    inputs->size(window_width, inputs->h());
+    playbacks->size(window_width, playbacks->h());
+    outputs->size(window_width, outputs->h());
+    scroll->init_sizes();
+    ((Fl_Widget *)(menubar))->size(window_width, menubar->h());
+    size_range(MIN_WIDTH, MIN_HEIGHT, window_width, window_height);
+    resize(x(), y(), window_width, h());
+    reorder();
+
+    inputs->buttons->presets->preset_change(1);
+}
+
 

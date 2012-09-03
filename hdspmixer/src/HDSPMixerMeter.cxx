@@ -116,7 +116,7 @@ int HDSPMixerMeter::logToHeight(double db)
 }
 
 /*! \todo Document weird expressions and values in this function */
-void HDSPMixerMeter::update(int peak, int overs, int64 rms)
+void HDSPMixerMeter::update(int peak, int overs, uint64_t rms)
 {
     double fp, fr, db;
     int over = 0;

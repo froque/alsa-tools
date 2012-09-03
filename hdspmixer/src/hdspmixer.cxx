@@ -1,8 +1,8 @@
 /*
  *   HDSPMixer
- *    
+ *
  *   Copyright (C) 2003 Thomas Charbonnel (thomas@undata.org)
- *    
+ *
  *   Copyright (C) 2011 Adrian Knoth (adi@drcomp.erfurt.thur.de)
  *                      Fredrik Lingvall (fredrik.lingvall@gmail.com)
  *
@@ -38,7 +38,7 @@
 int main(int argc, char **argv)
 {
     HDSPMixerWindow *window;
-    HDSPMixerCard *hdsp_cards[3];
+    HDSPMixerCard *hdsp_cards[MAX_CARDS];
     char *name, *shortname;
     int card;
     int cards = 0;
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     printf("Looking for RME cards:\n");
 
     while (snd_card_next(&card) >= 0) {
-        if (card < 0) {
+        if (card < 0 || card >= MAX_CARDS) {
             break;
         }
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
             cards++;
         } else if (!strncmp(name, "RME Hammerfall DSP", 18)) {
             printf("Uninitialized HDSP card found.\nUse hdsploader to upload configuration data to the card.\n");
-        } 
+        }
     }
 
     free(name);
@@ -107,17 +107,15 @@ int main(int argc, char **argv)
         printf("No RME cards found.\n");
         exit(EXIT_FAILURE);
     }
-    /*! \bug should have MAX_CARDS and not 3 */
-    for (int i = cards; i < 3; ++i) {
+
+    for (int i = cards; i < MAX_CARDS; ++i) {
         hdsp_cards[i] = NULL;
     }
 
     printf("%d RME cards %s found.\n", cards, (cards > 1) ? "cards" : "card");
-    window = new HDSPMixerWindow(0, 0, hdsp_cards[0]->window_width,
-            hdsp_cards[0]->window_height, "HDSPMixer", hdsp_cards[0],
-            hdsp_cards[1], hdsp_cards[2]);
+    window = new HDSPMixerWindow(0, 0, 100, 100, "HDSPMixer", hdsp_cards[0], hdsp_cards[1], hdsp_cards[2]);
     Fl::visual(FL_DOUBLE|FL_INDEX);
     window->show(argc, argv);
 
-    return Fl::run();    
+    return Fl::run();
 }

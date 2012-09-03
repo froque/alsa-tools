@@ -51,6 +51,7 @@ void HDSPMixerCardSelector::ActivateCard (int i)
     basew->stashPreset(); /* save current mixer state */
     basew->current_card = i;
     basew->cards[i]->setMode (basew->cards[i]->getSpeed ());
+    basew->updateMode();
     basew->setTitleWithFilename();
     basew->unstashPreset(); /* restore previous mixer state */
     redraw ();

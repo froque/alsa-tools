@@ -26,7 +26,7 @@
 
 static void alsactl_cb(snd_async_handler_t *handler)
 {
-    int err, clock_value;
+    int err;
     snd_ctl_t *ctl;
     snd_ctl_event_t *event;
     snd_ctl_elem_value_t *elemval;
@@ -48,6 +48,7 @@ static void alsactl_cb(snd_async_handler_t *handler)
     snd_ctl_event_malloc(&event);
     
     while ((err = snd_ctl_read(ctl, event)) > 0) {
+        // what is 11 ?   Possible answer: is the index of array struct snd_kcontrol_new snd_hdsp_controls[] in the kernel driver: Sample Clock Source
         if (snd_ctl_event_elem_get_numid(event) == 11 && (card == card->basew->cards[card->basew->current_card])) {
             /* We have a clock change and are the focused card */
             snd_ctl_event_elem_get_id(event, elemid);
@@ -57,35 +58,30 @@ static void alsactl_cb(snd_async_handler_t *handler)
                 snd_ctl_event_free(event);
                 return;
             }
-            clock_value = snd_ctl_elem_value_get_enumerated(elemval, 0);
-            if (clock_value == 0) {
-                int new_speed = card->getAutosyncSpeed();
-                if (new_speed >= 0 && new_speed != card->speed_mode) card->setMode(new_speed);
-            }
-            if (clock_value > 3 && clock_value < 7 && card->speed_mode != 1) {
-                card->setMode(1);
-            } else if (clock_value < 4 && card->speed_mode != 0) {
-                card->setMode(0);
-            } else if (clock_value > 6 && card->speed_mode != 2) {
-                card->setMode(2);
+            int speed = card->getSpeed();
+            if(speed != card->speed_mode){
+                card->setMode(speed);
+                card->basew->updateMode();
             }
         }
         snd_ctl_event_clear(event);
     }
-    
     snd_ctl_event_free(event);
 }
 
+/*! returns 0 for normal speed
+ *  returns 1 for double speed
+ *  returns 2 for quad speed
+ */
 int HDSPMixerCard::getAutosyncSpeed()
 {
     int err, rate;
     snd_ctl_elem_value_t *elemval;
     snd_ctl_elem_id_t * elemid;
-    snd_ctl_t *handle;
     snd_ctl_elem_value_alloca(&elemval);
     snd_ctl_elem_id_alloca(&elemid);
-    if ((err = snd_ctl_open(&handle, name, SND_CTL_NONBLOCK)) < 0) {
-        fprintf(stderr, "Error accessing ctl interface on card %s\n.", name);
+
+    if(isOpenCtl() == false ){
         return -1;
     }
     
@@ -93,14 +89,12 @@ int HDSPMixerCard::getAutosyncSpeed()
     snd_ctl_elem_id_set_interface(elemid, SND_CTL_ELEM_IFACE_MIXER);
     snd_ctl_elem_id_set_index(elemid, 0);
     snd_ctl_elem_value_set_id(elemval, elemid);
-    if (snd_ctl_elem_read(handle, elemval) < 0) {
+    if (snd_ctl_elem_read(ctl_handle, elemval) < 0) {
         snd_ctl_elem_id_set_interface(elemid, SND_CTL_ELEM_IFACE_HWDEP);
         snd_ctl_elem_value_set_id(elemval, elemid);
-        snd_ctl_elem_read(handle, elemval);
+        snd_ctl_elem_read(ctl_handle, elemval);
     }
     rate = snd_ctl_elem_value_get_integer(elemval, 0);
-
-    snd_ctl_close(handle);
 
     if (rate > 96000) {
         return 2;
@@ -110,31 +104,33 @@ int HDSPMixerCard::getAutosyncSpeed()
     return 0;
 }
 
+/*! returns 0 for normal speed
+ *  returns 1 for double speed
+ *  returns 2 for quad speed
+ */
 int HDSPMixerCard::getSpeed()
 {
     int err, val;
     snd_ctl_elem_value_t *elemval;
     snd_ctl_elem_id_t * elemid;
-    snd_ctl_t *handle;
     
     snd_ctl_elem_value_alloca(&elemval);
     snd_ctl_elem_id_alloca(&elemid);
 
-    if ((err = snd_ctl_open(&handle, name, SND_CTL_NONBLOCK)) < 0) {
-        fprintf(stderr, "Error accessing ctl interface on card %s\n.", name);
+    if(isOpenCtl() == false ){
         return -1;
     }
+
     snd_ctl_elem_id_set_name(elemid, "Sample Clock Source");
     snd_ctl_elem_id_set_interface(elemid, SND_CTL_ELEM_IFACE_MIXER);
     snd_ctl_elem_id_set_index(elemid, 0);
     snd_ctl_elem_value_set_id(elemval, elemid);
-    if (snd_ctl_elem_read(handle, elemval) < 0) {
+    if (snd_ctl_elem_read(ctl_handle, elemval) < 0) {
         snd_ctl_elem_id_set_interface(elemid, SND_CTL_ELEM_IFACE_PCM);
         snd_ctl_elem_value_set_id(elemval, elemid);
-        snd_ctl_elem_read(handle, elemval);
+        snd_ctl_elem_read(ctl_handle, elemval);
     }
     val = snd_ctl_elem_value_get_enumerated(elemval, 0);
-    snd_ctl_close(handle);
 
     switch (val) {
     case 0:
@@ -165,12 +161,17 @@ int HDSPMixerCard::getSpeed()
 
 HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
 {
+    ctl_handle = NULL;
+    hw = NULL;
     type = cardtype;
-    card_id = id;
-    snprintf(name, 6, "hw:%i", card_id);
+    snprintf(name, 6, "hw:%i", id);
     cardname = shortname;
     h9632_aeb.aebi = 0;
     h9632_aeb.aebo = 0;
+
+    openCtl();
+    openHW();
+
     if (type == H9632) {
         getAeb();
         playbacks_offset = 16;
@@ -191,13 +192,15 @@ HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
     basew = NULL;
 }
 
+HDSPMixerCard::~HDSPMixerCard(){
+    closeHW();
+    closeCtl();
+}
+
 void HDSPMixerCard::getAeb() {
     int err;
-    snd_hwdep_t *hw;
-    snd_hwdep_info_t *info;
-    snd_hwdep_info_alloca(&info);
-    if ((err = snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_DUPLEX)) != 0) {
-        fprintf(stderr, "Error opening hwdep device on card %s.\n", name);
+
+    if (isOpenHW() == false){
         return;
     }
     if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_9632_AEB, &h9632_aeb)) < 0) {
@@ -205,7 +208,6 @@ void HDSPMixerCard::getAeb() {
         snd_hwdep_close(hw);
         return;
     }
-    snd_hwdep_close(hw);
 }
 
 void HDSPMixerCard::adjustSettings() {
@@ -425,123 +427,159 @@ void HDSPMixerCard::adjustSettings() {
             meter_map_input = meter_map_playback = channel_map_raydat_qs;
             break;
         }
-
     }
-
-    window_width = (channels_playback+2)*STRIP_WIDTH;
-    window_height = FULLSTRIP_HEIGHT*2+SMALLSTRIP_HEIGHT+MENU_HEIGHT;
 }
 
+/*! 0 for normal speed
+ *  1 for double speed
+ *  2 for quad speed
+ */
 void HDSPMixerCard::setMode(int mode)
 {
     speed_mode = mode;
     adjustSettings();
-    actualizeStrips();
-
-    for (int i = 0; i < channels_input; ++i) {
-        basew->inputs->strips[i]->targets->setLabels();
-    }
-    for (int i = 0; i < channels_playback; ++i) {
-        basew->playbacks->strips[i]->targets->setLabels();
-    }
-    for (int i = 0; i < channels_output; ++i) {
-        basew->outputs->strips[i]->setLabels();
-    }
-
-    if (h9632_aeb.aebo && !h9632_aeb.aebi) {
-        basew->inputs->empty_aebi[0]->position(STRIP_WIDTH*(channels_input-4), basew->inputs->empty_aebi[0]->y());
-        basew->inputs->empty_aebi[1]->position(STRIP_WIDTH*(channels_input-2), basew->inputs->empty_aebi[1]->y());
-    } else if (h9632_aeb.aebi && !h9632_aeb.aebo) {
-        basew->playbacks->empty_aebo[0]->position(STRIP_WIDTH*(channels_playback-4), basew->playbacks->empty_aebo[0]->y());
-        basew->playbacks->empty_aebo[1]->position(STRIP_WIDTH*(channels_playback-2), basew->playbacks->empty_aebo[1]->y());
-        basew->outputs->empty_aebo[0]->position(STRIP_WIDTH*(channels_playback-4), basew->outputs->empty_aebo[0]->y());
-        basew->outputs->empty_aebo[1]->position(STRIP_WIDTH*(channels_playback-2), basew->outputs->empty_aebo[1]->y());
-    }
-    basew->inputs->buttons->position(STRIP_WIDTH*channels_input, basew->inputs->buttons->y());
-    basew->inputs->init_sizes();
-    basew->playbacks->empty->position(STRIP_WIDTH*channels_playback, basew->playbacks->empty->y());
-    basew->playbacks->init_sizes();
-    basew->outputs->empty->position(STRIP_WIDTH*(channels_playback), basew->outputs->empty->y());
-    basew->outputs->init_sizes();
-    basew->inputs->size(window_width, basew->inputs->h());
-    basew->playbacks->size(window_width, basew->playbacks->h());
-    basew->outputs->size(window_width, basew->outputs->h());
-    basew->scroll->init_sizes();
-    ((Fl_Widget *)(basew->menubar))->size(window_width, basew->menubar->h());
-    basew->size_range(MIN_WIDTH, MIN_HEIGHT, window_width, window_height);
-    basew->resize(basew->x(), basew->y(), window_width, basew->h());
-    basew->reorder();
-    basew->resetMixer();
-    basew->inputs->buttons->presets->preset_change(1);
+    resetMixer();
 }
 
-void HDSPMixerCard::actualizeStrips()
-{
-    for (int i = 0; i < HDSP_MAX_CHANNELS; ++i) {
-        if (i < channels_input) {
-            basew->inputs->strips[i]->show();
-        } else {
-            basew->inputs->strips[i]->hide();
-        }
-
-        if (i < channels_playback) {
-            basew->playbacks->strips[i]->show();
-        } else {
-            basew->playbacks->strips[i]->hide();
-        }
-
-        if (i < channels_output) {
-            basew->outputs->strips[i]->show();
-        } else {
-            basew->outputs->strips[i]->hide();
-        }
-    }
-    if (h9632_aeb.aebi && !h9632_aeb.aebo) {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->hide();
-            basew->playbacks->empty_aebo[i]->show();
-            basew->outputs->empty_aebo[i]->show();
-        }
-        for (int i = channels_playback-4; i < channels_playback; ++i) {
-            basew->playbacks->strips[i]->hide();
-            basew->outputs->strips[i]->hide();
-        }
-    } else if (h9632_aeb.aebo && !h9632_aeb.aebi) {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->show();
-            basew->playbacks->empty_aebo[i]->hide();
-            basew->outputs->empty_aebo[i]->hide();
-        }
-        for (int i = channels_input-4; i < channels_input; ++i) {
-            basew->inputs->strips[i]->hide();
-        }
-    } else {
-        for (int i = 0; i < 2; ++i) {
-            basew->inputs->empty_aebi[i]->hide();
-            basew->playbacks->empty_aebo[i]->hide();
-            basew->outputs->empty_aebo[i]->hide();
-        }
-    }
-    if (type != H9652 && type != H9632) basew->outputs->empty->hide();
-}
-
+/*! called from HDSPMixerWindow constructor
+ *
+ *  This class is contructed before the HDSPMixerWindow, so this basically passes a reference to the window
+ *
+ *  It also sets up a ALSA callback to all events
+ */
 int HDSPMixerCard::initializeCard(HDSPMixerWindow *w)
 {
     int err;
-    if ((err = snd_ctl_open(&cb_handle, name, SND_CTL_NONBLOCK)) < 0) {
-        fprintf(stderr, "Error opening ctl interface for card %s - exiting\n", name);
-        exit(EXIT_FAILURE);
+
+    if(isOpenCtl() == false){
+         exit(EXIT_FAILURE);
     }
-    if ((err = snd_async_add_ctl_handler(&cb_handler, cb_handle, alsactl_cb, this)) < 0) {
+    if ((err = snd_async_add_ctl_handler(&cb_handler, ctl_handle, alsactl_cb, this)) < 0) {
         fprintf(stderr, "Error registering async ctl callback for card %s - exiting\n", name);
         exit(EXIT_FAILURE);
     }
-    if ((err = snd_ctl_subscribe_events(cb_handle, 1)) < 0) {
+    if ((err = snd_ctl_subscribe_events(ctl_handle, 1)) < 0) {
         fprintf(stderr, "Error subscribing to ctl events for card %s - exiting\n", name);
         exit(EXIT_FAILURE);
     }
     basew = w;
-    actualizeStrips();
     return 0;
 }
 
+void HDSPMixerCard::setGain(int in, int out, int value)
+{
+    /* just a wrapper around the 'Mixer' ctl */
+
+    int err;
+
+    snd_ctl_elem_id_t *id;
+    snd_ctl_elem_value_t *ctl;
+
+    //printf("setGain(%d, %d, %d)\n", in, out, value);
+
+    snd_ctl_elem_value_alloca(&ctl);
+    snd_ctl_elem_id_alloca(&id);
+    snd_ctl_elem_id_set_name(id, "Mixer");
+    snd_ctl_elem_id_set_interface(id, SND_CTL_ELEM_IFACE_HWDEP);
+    snd_ctl_elem_id_set_device(id, 0);
+    snd_ctl_elem_id_set_index(id, 0);
+    snd_ctl_elem_value_set_id(ctl, id);
+
+    if (isOpenCtl() == false ){
+        return;
+    }
+
+    snd_ctl_elem_value_set_integer(ctl, 0, in);
+    snd_ctl_elem_value_set_integer(ctl, 1, out);
+    snd_ctl_elem_value_set_integer(ctl, 2, value);
+    if ((err = snd_ctl_elem_write(ctl_handle, ctl)) < 0) {
+        fprintf(stderr, "Alsa error 2: %s\n", snd_strerror(err));
+        closeCtl();
+        return;
+    }
+}
+
+void HDSPMixerCard::resetMixer()
+{
+    int i, j;
+    for (i = 0; i < (playbacks_offset*2) ; ++i) {
+        for (j = 0; j < (playbacks_offset); ++j) {
+            setGain(i,j,0);
+        }
+    }
+}
+
+void HDSPMixerCard::getPeakRmsMadi(struct hdspm_peak_rms *hdspm_peak_rms){
+    if (isOpenHW() == false ){
+        return;
+    }
+    if ((snd_hwdep_ioctl(hw, SNDRV_HDSPM_IOCTL_GET_PEAK_RMS, (void *)hdspm_peak_rms)) < 0) {
+        fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
+        snd_hwdep_close(hw);
+        return;
+    }
+}
+
+void HDSPMixerCard::getPeakRms(hdsp_peak_rms_t *hdsp_peak_rms){
+    if (isOpenHW() == false ){
+        return;
+    }
+    if ((snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_PEAK_RMS, (void *)hdsp_peak_rms)) < 0) {
+        fprintf(stderr, "HwDep ioctl failed. Metering stopped\n");
+        snd_hwdep_close(hw);
+        return;
+    }
+}
+
+void HDSPMixerCard::setInput(int in_idx, int out_idx, int left_value,int right_value){
+    setGain(channel_map_input[in_idx],dest_map[out_idx], left_value);
+    setGain(channel_map_input[in_idx],dest_map[out_idx]+1, right_value);
+}
+void HDSPMixerCard::setPlayback(int in_idx, int out_idx, int left_value,int right_value){
+    setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx], left_value);
+    setGain(playbacks_offset+channel_map_playback[in_idx],dest_map[out_idx]+1, right_value);
+}
+
+void HDSPMixerCard::openHW(){
+    if (isOpenHW() == true ){
+        return;
+    }
+    if (( snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_READ)) < 0) {
+        fprintf(stderr, "Couldn't open hwdep device. Metering stopped\n");
+        return;
+    }
+}
+
+void HDSPMixerCard::closeHW(){
+    snd_hwdep_close(hw);
+    hw = NULL;
+}
+bool HDSPMixerCard::isOpenHW(){
+    if(hw != NULL){
+        return true;
+    } else {
+        return false;
+    }
+}
+void HDSPMixerCard::openCtl(){
+    if (isOpenCtl() == true ){
+        return;
+    }
+    if ((snd_ctl_open(&ctl_handle, name, SND_CTL_NONBLOCK)) < 0) {
+        fprintf(stderr, "Error accessing ctl interface on card %s\n.", name);
+        return ;
+    }
+}
+
+void HDSPMixerCard::closeCtl(){
+    snd_ctl_close(ctl_handle);
+    ctl_handle = NULL;
+}
+
+bool HDSPMixerCard::isOpenCtl(){
+    if(ctl_handle != NULL){
+        return true;
+    } else {
+        return false;
+    }
+}

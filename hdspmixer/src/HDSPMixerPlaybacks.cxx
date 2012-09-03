@@ -30,16 +30,12 @@ HDSPMixerPlaybacks::HDSPMixerPlaybacks(int x, int y, int w, int h, int nchans):F
         /* Setup linked stereo channels */
         strips[i]->pan->relative = strips[i+1]->pan;
         strips[i+1]->pan->relative = strips[i]->pan;
-
         strips[i]->mutesolo->relative = strips[i+1]->mutesolo;
         strips[i+1]->mutesolo->relative = strips[i]->mutesolo;
-
         strips[i]->fader->relative = strips[i+1]->fader;
         strips[i+1]->fader->relative = strips[i]->fader;
-
         strips[i]->fader->gain = strips[i]->gain;
         strips[i+1]->fader->gain = strips[i+1]->gain;
-
         strips[i]->gain->relative = strips[i+1]->gain;
         strips[i+1]->gain->relative = strips[i]->gain;
     }
