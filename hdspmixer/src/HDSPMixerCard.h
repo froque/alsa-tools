@@ -42,18 +42,21 @@ class HDSPMixerWindow;
 class HDSPMixerCard
 {
 private:
-    snd_ctl_t *cb_handle;
+    snd_ctl_t *ctl_handle;
     snd_async_handler_t *cb_handler;
-    char *channel_map_input;    /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
-    char *channel_map_playback; /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
-    char *dest_map;             /*!< will be used in ALSA calls: snd_ctl_elem_value_set_integer */
+    char *channel_map_input;    /*!< used in setInput()*/
+    char *channel_map_playback; /*!< used in setPlayback() */
+    char *dest_map;             /*!< used in setInput() and setPlayback() */
     int playbacks_offset;       /*!< this has to do with the way the kernel driver reads and writes gains */
     void getAeb();              /*!< gets information about AEB (analog expansion boards) */
     void adjustSettings();      /*!< sets class variables: channels_input, channels_playback, channels_output, channel_map_input, channel_map_playback, dest_map, meter_map_input */
     snd_hwdep_t *hw;            /*!< handler for hardware specific calls */
-    void openHW();              /*!< open hardware for setting gains */
+    void openHW();              /*!< open hardware */
     void closeHW();             /*!< closes hardware */
     bool isOpenHW();            /*!< checks if hardware is opened */
+    void openCtl();             /*!< open ctl interface */
+    void closeCtl();            /*!< closes ctl interface */
+    bool isOpenCtl();           /*!< checks if ctl interface is opened */
     int getAutosyncSpeed();     /*!< access card to get current Auto sync speed */
 
 public:
@@ -75,7 +78,7 @@ public:
     HDSPMixerCard(int cardtype, int id, char *shortname);
     ~HDSPMixerCard();
     void setMode(int mode);     /*!< Sets speed mode to variable speed_mode */
-    int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */ /*fixme: move this to the constructor */
+    int initializeCard(HDSPMixerWindow *w); /*!< initializes the card. This should be done in the constructor, not here */
     int getSpeed();             /*!< access card to get current speed */
 
     void setGain(int in, int out, int value); /*!< wrapper around Mixer ctl interface */
