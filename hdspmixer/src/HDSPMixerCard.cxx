@@ -166,6 +166,7 @@ int HDSPMixerCard::getSpeed()
 
 HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
 {
+    hw = NULL;
     type = cardtype;
     snprintf(name, 6, "hw:%i", id);
     cardname = shortname;
@@ -189,7 +190,7 @@ HDSPMixerCard::HDSPMixerCard(int cardtype, int id, char *shortname)
     last_preset = last_dirty = 0;
 
     basew = NULL;
-    hw = NULL;
+
 }
 
 HDSPMixerCard::~HDSPMixerCard(){
@@ -198,12 +199,9 @@ HDSPMixerCard::~HDSPMixerCard(){
 
 void HDSPMixerCard::getAeb() {
     int err;
-    snd_hwdep_t *hw;
-    // fixme: this 2 lines don't seem necessary
-    snd_hwdep_info_t *info;
-    snd_hwdep_info_alloca(&info);
-    if ((err = snd_hwdep_open(&hw, name, SND_HWDEP_OPEN_DUPLEX)) != 0) {
-        fprintf(stderr, "Error opening hwdep device on card %s.\n", name);
+
+    openHW();
+    if (isOpenHW() == false){
         return;
     }
     if ((err = snd_hwdep_ioctl(hw, SNDRV_HDSP_IOCTL_GET_9632_AEB, &h9632_aeb)) < 0) {
@@ -211,7 +209,7 @@ void HDSPMixerCard::getAeb() {
         snd_hwdep_close(hw);
         return;
     }
-    snd_hwdep_close(hw);
+    closeHW();
 }
 
 void HDSPMixerCard::adjustSettings() {
